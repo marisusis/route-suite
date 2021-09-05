@@ -18,7 +18,9 @@ int main() {
 
     // send something
     Route::ClientOpenRequest request("BasicClient", _getpid());
-    channel.serverCall(&request, nullptr);
+    Route::PipeResult result;
+    channel.serverCall(&request, &result);
+
 
     std::chrono::seconds sleepTime = std::chrono::seconds(1000);
     spdlog::info("sleeping for {} seconds...", sleepTime.count());

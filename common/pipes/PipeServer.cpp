@@ -35,7 +35,7 @@ namespace Route {
         // create named pipe and get our handle
         pipeHandle = CreateNamedPipe(
                 pipeName, // the name of our pipe
-                PIPE_ACCESS_DUPLEX, // two way pipe
+                PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, // two way pipe
                 PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, // TODO something
                 PIPE_UNLIMITED_INSTANCES, // allow unlimited instances
                 PIPE_BUFFER_SIZE,
@@ -71,7 +71,7 @@ namespace Route {
     STATUS PipeServer::waitAcceptClient(PipeClient* client) {
         // wait for a client to connect; accept
         if (ConnectNamedPipe(pipeHandle, NULL)) {
-            client = new PipeClient(pipeHandle, pipeName);
+            new (client) PipeClient(pipeHandle, pipeName);
 
             // init pipe to default value
             pipeHandle = INVALID_HANDLE_VALUE;
@@ -80,7 +80,7 @@ namespace Route {
         } else {
             if (GetLastError() == ERROR_PIPE_CONNECTED) {
                 WRN_CTX(PipeServer::waitAcceptClient, "pipe [{}] already connected!", pipeName);
-                client = new PipeClient(pipeHandle, pipeName);
+                new (client) PipeClient(pipeHandle, pipeName);
                 return STATUS_OK;
             } else {
                 ERR_CTX(PipeServer::waitAcceptClient, "cannot accept client to pipe [{}], err={}", pipeName, GetLastError());

@@ -4,6 +4,7 @@
 #include <windows.h>
 #include "types.h"
 #include "constants.h"
+#include "utils.h"
 
 namespace Route {
 
@@ -14,8 +15,12 @@ namespace Route {
         char pipeName[PIPE_NAME_SIZE] = "NO_NAME";
 
     public:
-        Pipe(): pipeHandle(INVALID_HANDLE_VALUE) {};
-        explicit Pipe(HANDLE pipe): pipeHandle(pipe) {};
+        Pipe(): pipeHandle(INVALID_HANDLE_VALUE) {
+            DBG_CTX(Pipe::new, "new Pipe with no handle");
+        };
+        explicit Pipe(HANDLE pipe): pipeHandle(pipe) {
+            DBG_CTX(Pipe::new, "new Pipe with handle");
+        };
 
         STATUS read(void* data, int size);
         STATUS write(void* data, int size);

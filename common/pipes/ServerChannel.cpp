@@ -18,7 +18,7 @@ namespace Route {
         std::list<ChannelConnectionThread*>::iterator  iter;
 
         // shut down the clients
-        for (iter = clients.begin(); iter != clients.end(); iter++) {
+        for (iter = channelConnections.begin(); iter != channelConnections.end(); iter++) {
 
             // current value
             ChannelConnectionThread* chan = *iter;
@@ -104,6 +104,46 @@ namespace Route {
             return acceptStatus;
         }
 
+        // add the client
+        addClient(pipe);
+
+        return STATUS_OK;
+    }
+
+    STATUS ServerChannel::addClient(PipeClient* pipe) {
+        // clients iterator
+        std::list<ChannelConnectionThread*>::iterator iter = channelConnections.begin();
+
+        // the thread
+        ChannelConnectionThread* channelThread;
+
+        DBG_CTX(ServerChannel::addClient, "adding client, current size={}", channelConnections.size());
+
+        // remove dead/not running clients
+        while (iter != channelConnections.end()) {
+            // current client
+            channelThread = *iter;
+
+            // check if running
+            if (channelThread->isRunning()) {
+                // next item
+                iter++;
+            } else {
+                // delete client
+                iter = channelConnections.erase(iter);
+                delete channelThread;
+            }
+        }
+
+        // create new thread
+        channelThread = new ChannelConnectionThread(pipe);
+
+        // open the thread
+        channelThread->open(server);
+
+        // add to list
+        channelConnections.push_back(channelThread);
+
         return STATUS_OK;
     }
 
@@ -148,6 +188,14 @@ namespace Route {
             // handle request
             return decoder->handleRequest(pipe, requestHeader.type);
         }
+
+        // release the mutex
+        if (!ReleaseMutex(mutexHandle)) {
+            ERR_CTX(ChannelConnectionThread::execute, "error releasing mutex!");
+            return STATUS_ERROR;
+        }
+
+        return STATUS_OK;
     }
 
     STATUS ChannelConnectionThread::open(RouteServer* the_server) {
@@ -181,7 +229,8 @@ namespace Route {
     }
 
     bool ChannelConnectionThread::isRunning() {
-        return false;
+        WRN_CTX(ChannelConnectionThread::isRunning, "not implemented!");
+        return true;
     }
 }
 

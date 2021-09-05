@@ -1,6 +1,7 @@
 #include "RequestDecoder.h"
 #include "server/RouteServer.h"
 #include "utils.h"
+#include "PipeRequest.h"
 
 namespace Route {
 
@@ -14,6 +15,21 @@ namespace Route {
 
     STATUS RequestDecoder::handleRequest(PipeClient* pipe, int type) {
         DBG_CTX(RequestDecoder::handleRequest, "handling request type={}", type);
+
+        switch (type) {
+
+            case PipeRequest::CLIENT_OPEN:
+                DBG_CTX(RequestDecoder::handleRequest, "received CLIENT_OPEN.");
+                ClientOpenRequest req;
+                PipeResult res;
+
+                // read request
+                req.read(pipe);
+
+                DBG_CTX(RequestDecoder::handleRequest, "CLIENT_OPEN[name={},pid={}]", req.name, req.pid);
+                return STATUS_OK;
+
+        }
 
         return STATUS_NO_THREAD;
     }

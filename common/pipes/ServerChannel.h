@@ -40,7 +40,7 @@ namespace Route {
 
     private:
         char serverName[SERVER_NAME_LENGTH];
-        std::list<ChannelConnectionThread*> clients;
+        std::list<ChannelConnectionThread*> channelConnections;
         PipeServer requestPipe;
         RouteServer* server;
         Thread thread;
@@ -60,6 +60,8 @@ namespace Route {
 
         STATUS listenForClients();
         STATUS acceptClients();
+
+        STATUS addClient(PipeClient* pipe);
 
     };
 

@@ -9,7 +9,7 @@ namespace Route {
 
         // read from the pipe
         DBG_CTX(Pipe::read, "reading length {} from [{}]...", size, pipeName);
-        BOOL read = ReadFile(pipeHandle, data, size, &bytesRead, nullptr);
+        BOOL read = ReadFile(pipeHandle, data, size, &bytesRead, NULL);
 
         // check we actually read something
         if (read) {
@@ -30,7 +30,7 @@ namespace Route {
 
         // read from the pipe
         DBG_CTX(Pipe::write, "writing length {} to [{}]...", size, pipeName);
-        BOOL write = WriteFile(pipeHandle, data, size, &bytesWritten, nullptr);
+        BOOL write = WriteFile(pipeHandle, data, size, &bytesWritten, NULL);
 
         // check we actually read something
         if (write) {

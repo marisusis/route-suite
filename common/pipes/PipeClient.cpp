@@ -7,7 +7,7 @@ namespace Route {
         LOG_CTX(PipeClient::new, "new PipeClient.");
     }
 
-    PipeClient::PipeClient(HANDLE pipe_handle, const char* pipe_name) {
+    PipeClient::PipeClient(HANDLE pipe_handle, const char* pipe_name) : Pipe(pipe_handle) {
         LOG_CTX(PipeClient::new, "new pipe client with handle named [{}].", pipe_name);
         strcpy_s(pipeName, PIPE_NAME_SIZE, pipe_name);
     }

@@ -35,7 +35,9 @@ namespace Route {
 
             // TODO do something with status?
             // run the function
-            runnable->execute();
+            if (runnable->execute() != STATUS_OK) {
+                return 0;
+            }
         }
 
         return 0;

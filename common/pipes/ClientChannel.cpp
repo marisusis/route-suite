@@ -109,7 +109,7 @@ namespace Route {
         }
 
         // read result
-        LOG_CTX(ClientChannel::serverCall, "writing server request type={}...", request->type);
+        LOG_CTX(ClientChannel::serverCall, "reading server result type={}...", request->type);
         STATUS readStatus = result->read(requestPipe);
 
         if (!OK(readStatus)) {
