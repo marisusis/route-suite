@@ -120,6 +120,19 @@ namespace Route {
         return STATUS_OK;
     }
 
+    STATUS ClientChannel::serverSend(PipeRequest* request) {
+        // write request
+        LOG_CTX(ClientChannel::serverCall, "writing server request type={}...", request->type);
+        STATUS writeStatus = request->write(requestPipe);
+
+        if (!OK(writeStatus)) {
+            ERR_CTX(ClientChannel::serverCall, "error writing request to pipe");
+            return writeStatus;
+        }
+
+        return STATUS_OK;
+    }
+
     bool ClientChannel::isChannelThread() {
         return thread.isThread();
     }

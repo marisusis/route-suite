@@ -29,7 +29,10 @@ namespace Route {
     struct PipeRequest {
 
         enum RequestType {
-            CLIENT_OPEN = 1
+            CLIENT_OPEN = 1,
+            CLIENT_CLOSE,
+            ENGINE_START,
+            ENGINE_STOP,
         };
 
         RequestType type;
@@ -112,6 +115,61 @@ namespace Route {
             return sizeof(int) + sizeof(name);
         }
 
+    };
+
+    struct ClientOpenResult : public PipeResult {
+
+        int referenceNumber;
+
+        ClientOpenResult(): referenceNumber(-1) {}
+
+        ClientOpenResult(int ref): referenceNumber(ref) {}
+
+        STATUS read(PipeClient* client) override {
+            ValidateTransaction(PipeResult::read(client));
+            ReadTransaction(referenceNumber, int);
+        }
+
+        STATUS write(PipeClient* client) override {
+            ValidateTransaction(PipeResult::write(client));
+            WriteTransaction(referenceNumber, int);
+        }
+
+    };
+
+    struct ClientCloseRequest : public PipeRequest {
+
+        char name[CLIENT_NAME_SIZE + 1];
+        int pid;
+
+        ClientCloseRequest(): pid(0) {
+            // set name to nothing
+            memset(name, 0, sizeof(name));
+        }
+
+        ClientCloseRequest(const char* client_name, int client_pid) : PipeRequest(PipeRequest::CLIENT_CLOSE) {
+            memset(name, 0, sizeof(name));
+            snprintf(name, sizeof(name), "%s", client_name);
+            pid = client_pid;
+        }
+
+        STATUS read(PipeClient* client) override {
+            ValidateSize();
+            ReadTransaction(pid, int);
+            ReadTransaction(name, name);
+            return STATUS_OK;
+        }
+
+        STATUS write(PipeClient* client) override {
+            ValidateTransaction(PipeRequest::write(client, size()));
+            WriteTransaction(pid, int);
+            WriteTransaction(name, name);
+            return STATUS_OK;
+        }
+
+        int size() override {
+            return sizeof(int) + sizeof(name);
+        }
 
     };
 

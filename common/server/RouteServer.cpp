@@ -20,6 +20,15 @@ namespace Route {
         return STATUS_OK;
     }
 
+    STATUS RouteServer::tempAction(std::string action) {
+        LOG_CTX(RouteServer::tempAction, "A wild Action has appeared! It's name is {}.", action);
+        return STATUS_OK;
+    }
+
+    int RouteServer::getNewReferenceNumber() {
+        return currentReferenceNumber++;
+    }
+
     STATUS RouteServer::close() {
         LOG_CTX(RouteServer::close, "closing server...");
 

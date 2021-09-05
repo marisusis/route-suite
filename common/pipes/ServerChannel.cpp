@@ -7,7 +7,7 @@ namespace Route {
 
     HANDLE ChannelConnectionThread::mutexHandle = nullptr;
 
-    ServerChannel::ServerChannel() : thread(this, "ServerChannel") {
+    ServerChannel::ServerChannel() : thread(this, "server_channel") {
         LOG_CTX(ServerChannel::new, "new server channel.");
     }
 
@@ -147,7 +147,7 @@ namespace Route {
         return STATUS_OK;
     }
 
-    ChannelConnectionThread::ChannelConnectionThread(PipeClient* pipe) : pipe(pipe), thread(this, "channel") {
+    ChannelConnectionThread::ChannelConnectionThread(PipeClient* pipe) : pipe(pipe), thread(this, "channel_connection") {
         // allocate mutex
         if (mutexHandle == nullptr) {
             DBG_CTX(ChannelConnectionThread::new, "creating static mutex...");
@@ -213,7 +213,7 @@ namespace Route {
             server = the_server;
 
             // create request decoder
-            decoder = new RequestDecoder(server);
+            decoder = new RequestDecoder(server, this);
 
             return STATUS_OK;
         }
@@ -221,6 +221,9 @@ namespace Route {
 
     STATUS ChannelConnectionThread::close() {
         DBG_CTX(ChannelConnectionThread::close, "closing channel connection thread...");
+
+        // kill the thread
+        thread.kill();
 
         // close the pipe
         pipe->close();

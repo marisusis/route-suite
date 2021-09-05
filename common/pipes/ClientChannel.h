@@ -29,6 +29,7 @@ namespace Route {
         STATUS execute() final;
 
         STATUS serverCall(PipeRequest* request, PipeResult* result);
+        STATUS serverSend(PipeRequest* request);
 
         bool isChannelThread();
 

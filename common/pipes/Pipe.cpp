@@ -8,7 +8,7 @@ namespace Route {
         DWORD bytesRead;
 
         // read from the pipe
-        DBG_CTX(Pipe::read, "reading length {} from [{}]...", size, pipeName);
+        TRC_CTX(Pipe::read, "reading length {} from [{}]...", size, pipeName);
         BOOL read = ReadFile(pipeHandle, data, size, &bytesRead, NULL);
 
         // check we actually read something
@@ -29,7 +29,7 @@ namespace Route {
         DWORD bytesWritten;
 
         // read from the pipe
-        DBG_CTX(Pipe::write, "writing length {} to [{}]...", size, pipeName);
+        TRC_CTX(Pipe::write, "writing length {} to [{}]...", size, pipeName);
         BOOL write = WriteFile(pipeHandle, data, size, &bytesWritten, NULL);
 
         // check we actually read something

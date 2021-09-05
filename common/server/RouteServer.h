@@ -10,6 +10,7 @@ namespace Route {
 
     private:
         ServerChannel requestChannel;
+        int currentReferenceNumber = 1;
 
     public:
         RouteServer();
@@ -20,6 +21,10 @@ namespace Route {
 
         STATUS start();
         STATUS stop();
+
+        STATUS tempAction(std::string action);
+
+        int getNewReferenceNumber();
 
     };
 
