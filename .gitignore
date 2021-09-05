@@ -1,0 +1,11 @@
+/.idea/
+/cmake-build-debug/
+/cmake-build-debug-x64/
+/cmake-build-release/
+/conan.lock
+/conanbuildinfo.txt
+/conanbuildinfo_debug.cmake
+/conanbuildinfo_multi.cmake
+/conanbuildinfo_release.cmake
+/conaninfo.txt
+/graph_info.json
