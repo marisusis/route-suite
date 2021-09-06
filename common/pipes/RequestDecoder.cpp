@@ -27,7 +27,7 @@ namespace Route {
                 // read request
                 req.read(pipe);
 
-                // create result
+                // get a reference number for our client
                 res.referenceNumber = server->getNewReferenceNumber();
 
                 // write result
