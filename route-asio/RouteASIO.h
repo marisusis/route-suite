@@ -1,9 +1,38 @@
-#ifndef ROUTE_SUITE_ROUTEASIO_H
-#define ROUTE_SUITE_ROUTEASIO_H
+/*
+	Steinberg Audio Stream I/O API
+	(c) 1999, Steinberg Soft- und Hardware GmbH
+
+	asiosmpl.h
+	
+	test implementation of asio
+*/
+
+#ifndef _asiosmpl_
+#define _asiosmpl_
+
+#include "asiosys.h"
+#include "client/RouteClient.h"
+
+#define TESTWAVES 1
+// when true, will feed the left input (to host) with
+// a sine wave, and the right one with a sawtooth
+
+enum {
+    kBlockFrames = 256,
+    kNumInputs = 16,
+    kNumOutputs = 16
+};
 
 
-#include <atlbase.h>
-#include <atlcom.h>
+#include "rpc.h"
+#include "rpcndr.h"
+
+
+#include <windows.h>
+#include "ole2.h"
+
+
+#include "combase.h"
 #include "iasiodrv.h"
 
 namespace Route {
@@ -32,26 +61,108 @@ namespace Route {
         virtual HRESULT STDMETHODCALLTYPE NonDelegatingQueryInterface(REFIID riid, void** ppvObject);
 
 
+        ASIOBool init(void* sysRef);
 
-    class __declspec(uuid("a8494b3c-d061-4814-8567-1b95028c2d72")) RouteASIO
-            : public IASIO, public IRouteASIO, public CComObjectRootEx<CComMultiThreadModel>,
-              public CComCoClass<RouteASIO, &__uuidof(RouteASIO)> {
+        void getDriverName(char* name);    // max 32 bytes incl. terminating zero
+        long getDriverVersion();
 
-    BEGIN_COM_MAP(RouteASIO)
-                            COM_INTERFACE_ENTRY(IRouteASIO)
+        void getErrorMessage(char* string);    // max 128 bytes incl.
 
-                            // To add insult to injury, ASIO mistakes the CLSID for an IID when calling CoCreateInstance(). Yuck.
-                            COM_INTERFACE_ENTRY(RouteASIO)
+        ASIOError start();
 
-                            // IASIO doesn't have an IID (see above), which is why it doesn't appear here.
-        END_COM_MAP()
+        ASIOError stop();
 
+        ASIOError getChannels(long* numInputChannels, long* numOutputChannels);
 
+        ASIOError getLatencies(long* inputLatency, long* outputLatency);
 
+        ASIOError getBufferSize(long* minSize, long* maxSize,
+                                long* preferredSize, long* granularity);
 
+        ASIOError canSampleRate(ASIOSampleRate sampleRate);
+
+        ASIOError getSampleRate(ASIOSampleRate* sampleRate);
+
+        ASIOError setSampleRate(ASIOSampleRate sampleRate);
+
+        ASIOError getClockSources(ASIOClockSource* clocks, long* numSources);
+
+        ASIOError setClockSource(long index);
+
+        ASIOError getSamplePosition(ASIOSamples* sPos, ASIOTimeStamp* tStamp);
+
+        ASIOError getChannelInfo(ASIOChannelInfo* info);
+
+        ASIOError createBuffers(ASIOBufferInfo* bufferInfos, long numChannels,
+                                long bufferSize, ASIOCallbacks* callbacks);
+
+        ASIOError disposeBuffers();
+
+        ASIOError controlPanel();
+
+        ASIOError future(long selector, void* opt);
+
+        ASIOError outputReady();
+
+        void bufferSwitch();
+
+        long getMilliSeconds() { return milliSeconds; }
+
+    private:
+        RouteClient* routeClient;
+
+        friend void myTimer();
+
+        bool inputOpen();
+
+#if TESTWAVES
+
+        void makeSine(short* wave);
+
+        void makeSaw(short* wave);
+
+#endif
+
+        void inputClose();
+
+        void processInput();
+
+        bool outputOpen();
+
+        void outputClose();
+
+        void processOutput();
+
+        void timerOn();
+
+        void timerOff();
+
+        void bufferSwitchX();
+
+        double samplePosition;
+        double sampleRate;
+        ASIOCallbacks* callbacks;
+        ASIOTime asioTime;
+        ASIOTimeStamp theSystemTime;
+        short* inputBuffers[kNumInputs * 2];
+        short* outputBuffers[kNumOutputs * 2];
+#if TESTWAVES
+        short* sineWave, * sawTooth;
+#endif
+        long inMap[kNumInputs];
+        long outMap[kNumOutputs];
+        long blockFrames;
+        long inputLatency;
+        long outputLatency;
+        long activeInputs;
+        long activeOutputs;
+        long toggle;
+        long milliSeconds;
+        bool active, started;
+        bool timeInfoMode, tcRead;
+        char errorMessage[128];
     };
 
 }
+#endif
 
-
-#endif //ROUTE_SUITE_ROUTEASIO_H
