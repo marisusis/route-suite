@@ -22,12 +22,12 @@ namespace Route {
         if (name == nullptr) {
             // create pipe name string
             snprintf(pipeName, sizeof(pipeName), R"(\\.\pipe\%s_%s_pipe_%s_%d)", GLOBAL_NAMESPACE_PREFIX, theNamespace,
-                     name, which);
+                     PIPE_NAME_DEFAULT, which);
         } else {
             // create generic pipe name
             WRN_CTX(PipeServer::bind, "no name provided for pipe!");
             snprintf(pipeName, sizeof(pipeName), R"(\\.\pipe\%s_%s_pipe_%s_%d)", GLOBAL_NAMESPACE_PREFIX, theNamespace,
-                     PIPE_NAME_DEFAULT, which);
+                     name, which);
         }
 
         LOG_CTX(PipeServer::bind, "binding to pipe [{}]...", pipeName);
@@ -35,7 +35,7 @@ namespace Route {
         // create named pipe and get our handle
         pipeHandle = CreateNamedPipe(
                 pipeName, // the name of our pipe
-                PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, // two way pipe
+                PIPE_ACCESS_DUPLEX , // two way pipe, | FILE_FLAG_OVERLAPPED for async
                 PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, // TODO something
                 PIPE_UNLIMITED_INSTANCES, // allow unlimited instances
                 PIPE_BUFFER_SIZE,

@@ -25,13 +25,16 @@ namespace Route {
         if (name == nullptr) {
             // create pipe name string
             snprintf(pipeName, sizeof(pipeName), R"(\\.\pipe\%s_%s_pipe_%s_%d)", GLOBAL_NAMESPACE_PREFIX, theNamespace,
-                     name, which);
+                     PIPE_NAME_DEFAULT, which);
         } else {
             // create generic pipe name
             WRN_CTX(PipeClient::connect, "no name provided for pipe!");
             snprintf(pipeName, sizeof(pipeName), R"(\\.\pipe\%s_%s_pipe_%s_%d)", GLOBAL_NAMESPACE_PREFIX, theNamespace,
-                     PIPE_NAME_DEFAULT, which);
+                     name, which);
         }
+
+        LOG_CTX(PipeClient::connect, "connecting to pipe [{}]...", pipeName);
+
 
         while (true) {
 

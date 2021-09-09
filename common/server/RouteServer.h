@@ -2,6 +2,7 @@
 #define ROUTE_SUITE_ROUTESERVER_H
 
 #include <pipes/ServerChannel.h>
+#include "server/client/ClientManager.h"
 #include "types.h"
 
 namespace Route {
@@ -10,6 +11,7 @@ namespace Route {
 
     private:
         ServerChannel requestChannel;
+        ClientManager clientManager;
         int currentReferenceNumber = 1;
 
     public:
@@ -22,7 +24,9 @@ namespace Route {
         STATUS start();
         STATUS stop();
 
-        STATUS tempAction(std::string action);
+        ClientManager* getClientManager();
+
+        STATUS tempAction(const std::string& action);
 
         int getNewReferenceNumber();
 

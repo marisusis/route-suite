@@ -1,9 +1,10 @@
 #include "utils.h"
 #include "RouteServer.h"
+#include "server/client/ClientManager.h"
 
 namespace Route {
 
-    RouteServer::RouteServer() {
+    RouteServer::RouteServer() : clientManager(this) {
 
     }
 
@@ -17,10 +18,13 @@ namespace Route {
         // open the request channel
         requestChannel.open(this, SERVER_NAME);
 
+        // open client manager
+        clientManager.open();
+
         return STATUS_OK;
     }
 
-    STATUS RouteServer::tempAction(std::string action) {
+    STATUS RouteServer::tempAction(const std::string& action) {
         LOG_CTX(RouteServer::tempAction, "A wild Action has appeared! It's name is {}.", action);
         return STATUS_OK;
     }
@@ -31,6 +35,9 @@ namespace Route {
 
     STATUS RouteServer::close() {
         LOG_CTX(RouteServer::close, "closing server...");
+
+        // close client manager
+        clientManager.close();
 
         // close the request channel
         requestChannel.close();
@@ -48,8 +55,15 @@ namespace Route {
     STATUS RouteServer::stop() {
         LOG_CTX(RouteServer::stop, "stopping server...");
 
+        // alert all clients
+
+
         // stop the request channel
         return requestChannel.stop();
+    }
+
+    ClientManager* RouteServer::getClientManager() {
+        return &clientManager;
     }
 
 }

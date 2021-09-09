@@ -27,8 +27,8 @@ namespace Route {
                 // read request
                 req.read(pipe);
 
-                // get a reference number for our client
-                res.referenceNumber = server->getNewReferenceNumber();
+                // add client
+                server->getClientManager()->addClient(req.name, req.pid, &res.referenceNumber);
 
                 // write result
                 res.write(pipe);
@@ -45,7 +45,15 @@ namespace Route {
 
                 // read request
                 req.read(pipe);
-                DBG_CTX(RequestDecoder::handleRequest, "CLIENT_CLOSE[name={},pid={}]", req.name, req.pid);
+                DBG_CTX(RequestDecoder::handleRequest, "CLIENT_CLOSE[ref={}]", req.ref);
+
+                // close client
+                STATUS closeStatus = server->getClientManager()->closeClient(req.ref);
+
+                if (closeStatus != STATUS_OK) {
+                    CRT_CTX(RequestDecoder::handleRequest, "unable to close client [{}]! status={}", req.ref, statusToString(closeStatus));
+//                    return closeStatus;
+                }
 
                 // close thread
                 channelThread->close();

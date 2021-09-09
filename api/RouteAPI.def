@@ -1,0 +1,8 @@
+LIBRARY "RouteAPI"
+
+EXPORTS
+
+route_create_client
+route_open_client
+route_close_client
+route_get_ref

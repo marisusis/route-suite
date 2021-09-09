@@ -75,7 +75,7 @@ namespace Route {
     }
 
     STATUS Thread::start() {
-        WRN_CTX(Thread::start, "starting thread [{}]...", threadName);
+        DBG_CTX(Thread::start, "starting thread [{}]...", threadName);
 
         // thread is starting
         threadState.store(STARTING);
@@ -195,9 +195,11 @@ namespace Route {
     }
 
     void Thread::setState(ThreadState new_state) {
-        DBG_CTX(Thread::setState, "attempting to change thread [{}] state {} -> {}...", threadName, toString(threadState.load()), toString(new_state));
+        DBG_CTX(Thread::setState, "attempting to change thread [{}] state {} -> {}...", threadName,
+                threadStateToString(threadState.load()),
+                threadStateToString(new_state));
         threadState.store(new_state);
-        DBG_CTX(Thread::setState, "thread [{}] state now {}.", threadName, toString(new_state));
+        DBG_CTX(Thread::setState, "thread [{}] state now {}.", threadName, threadStateToString(new_state));
     }
 
     bool Thread::isThread() {

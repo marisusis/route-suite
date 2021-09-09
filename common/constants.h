@@ -15,9 +15,9 @@
 // Named pipes
 #define PIPE_NAME_SIZE 256
 #define PIPE_BUFFER_SIZE 4096
-#define PIPE_NAME_DEFAULT "pizza"
-#define PIPE_SERVER_TAG "fruit"
-#define PIPE_CLIENT_TAG "pasta"
+#define PIPE_NAME_DEFAULT "generic"
+#define PIPE_SERVER_TAG "server"
+#define PIPE_CLIENT_TAG "client"
 
 // Status codes
 //#define STATUS_OK ((STATUS) 0x1)

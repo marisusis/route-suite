@@ -48,18 +48,20 @@ add_library(RouteCommon STATIC
             common/pipes/PipeClient.cpp
             common/constants.h
             common/types.h
-            common/utils.h common/pipes/ServerChannel.cpp common/pipes/ServerChannel.h common/thread/Thread.cpp common/thread/Thread.h common/thread/Event.cpp common/thread/Event.h common/thread/Mutex.cpp common/thread/Mutex.h common/thread/Event.cpp common/thread/Event.h common/pipes/PipeRequest.h common/server/RouteServer.cpp common/server/RouteServer.h common/pipes/ClientChannel.cpp common/pipes/ClientChannel.h common/pipes/RequestDecoder.cpp common/pipes/RequestDecoder.h common/engine/Graph.cpp common/engine/Graph.h common/client/RouteClient.cpp common/client/RouteClient.h route-asio/combase.cpp)
+            common/utils.h common/pipes/ServerChannel.cpp common/pipes/ServerChannel.h common/thread/Thread.cpp common/thread/Thread.h common/thread/Event.cpp common/thread/Event.h common/thread/Mutex.cpp common/thread/Mutex.h common/thread/Event.cpp common/thread/Event.h common/pipes/PipeRequest.h common/server/RouteServer.cpp common/server/RouteServer.h common/pipes/ClientChannel.cpp common/pipes/ClientChannel.h common/pipes/RequestDecoder.cpp common/pipes/RequestDecoder.h common/client/RouteClient.cpp common/client/RouteClient.h common/utils.cpp common/server/client/ClientManager.cpp common/server/client/ClientManager.h common/server/client/Client.cpp common/server/client/Client.h common/pipes/NotifyClientChannel.cpp common/pipes/NotifyClientChannel.h)
 target_link_libraries(RouteCommon
         PUBLIC CONAN_PKG::argparse
         PUBLIC CONAN_PKG::spdlog)
 target_include_directories(RouteCommon
-        PUBLIC common)
+        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/common)
 
 # examples
 add_subdirectory(examples/basic-client)
 
 # ASIO driver
 add_subdirectory(route-asio)
+add_subdirectory(bindings/node)
+add_subdirectory(api)
 
 add_executable(RouteD routed.cpp)
 target_link_libraries(RouteD

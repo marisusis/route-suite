@@ -41,6 +41,9 @@ namespace Route {
         // set server value
         ServerChannel::server = the_server;
 
+        // set server name
+        memcpy(serverName, server_name, sizeof(serverName));
+
         return STATUS_OK;
     }
 
@@ -171,6 +174,7 @@ namespace Route {
 
         // read the request header
         STATUS readStatus = requestHeader.read(pipe);
+        STATUS returnStatus = STATUS_OK;
 
         // lock mutex
         if (WaitForSingleObject(mutexHandle, INFINITE) == WAIT_FAILED) {
@@ -180,22 +184,22 @@ namespace Route {
 
         if (readStatus != STATUS_OK) {
             ERR_CTX(ChannelConnectionThread::execute, "unable to decode request header!");
-            return STATUS_BAD_REQUEST;
+            returnStatus = STATUS_BAD_REQUEST;
         } else {
             LOG_CTX(ChannelConnectionThread::execute, "TODO decoding header...");
 
             // TODO a better way
             // handle request
-            return decoder->handleRequest(pipe, requestHeader.type);
+            returnStatus = decoder->handleRequest(pipe, requestHeader.type);
         }
 
         // release the mutex
         if (!ReleaseMutex(mutexHandle)) {
-            ERR_CTX(ChannelConnectionThread::execute, "error releasing mutex!");
+            CRT_CTX(ChannelConnectionThread::execute, "error releasing mutex!");
             return STATUS_ERROR;
         }
 
-        return STATUS_OK;
+        return returnStatus;
     }
 
     STATUS ChannelConnectionThread::open(RouteServer* the_server) {

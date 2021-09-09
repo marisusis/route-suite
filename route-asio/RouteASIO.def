@@ -1,7 +1,7 @@
-LIBRARY
-
-EXPORTS
-	DllCanUnloadNow     PRIVATE
-	DllGetClassObject   PRIVATE
-	DllRegisterServer   PRIVATE
-	DllUnregisterServer PRIVATE
+LIBRARY			RouteASIO
+EXPORTS	
+				DllMain
+				DllGetClassObject      PRIVATE
+				DllCanUnloadNow	       PRIVATE
+				DllRegisterServer      PRIVATE
+				DllUnregisterServer    PRIVATE

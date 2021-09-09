@@ -6,6 +6,7 @@
 #include <constants.h>
 #include <atomic>
 #include <string>
+#include "utils.h"
 
 namespace Route {
 
@@ -15,7 +16,7 @@ namespace Route {
         IDLE, STARTING, INITIALIZING, RUNNING
     };
 
-    static std::string toString(ThreadState state) {
+    static std::string threadStateToString(ThreadState state) {
         switch (state) {
             case IDLE:
                 return "IDLE";
@@ -25,6 +26,9 @@ namespace Route {
                 return "INITIALIZING";
             case RUNNING:
                 return "RUNNING";
+            default:
+                CRT_CTX(threadStateToString, "bad ThreadState!");
+                return "BAD THREAD STATE";
         }
     }
 
