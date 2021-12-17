@@ -444,27 +444,41 @@ namespace Route {
 
     ASIOError RouteASIO::controlPanel() {
         DBG_CTX(RouteASIO::controlPanel, "opening control panel...");
+        routeClient->openConfig();
         return ASE_NotPresent;
     }
 
 
     ASIOError RouteASIO::future(long selector, void* opt)    // !!! check properties
     {
+        DBG_CTX(RouteASIO::future, "FUTURE!!!");
+
         ASIOTransportParameters* tp = (ASIOTransportParameters*) opt;
         switch (selector) {
             case kAsioEnableTimeCodeRead:
+                DBG_CTX(RouteASIO::future, "kAsioEnableTimeCodeRead");
                 tcRead = true;
                 return ASE_SUCCESS;
             case kAsioDisableTimeCodeRead:
+                DBG_CTX(RouteASIO::future, "kAsioDisableTimeCodeRead");
+
                 tcRead = false;
                 return ASE_SUCCESS;
             case kAsioSetInputMonitor:
+                DBG_CTX(RouteASIO::future, "kAsioSetInputMonitor");
+
                 return ASE_SUCCESS;    // for testing!!!
             case kAsioCanInputMonitor:
+                DBG_CTX(RouteASIO::future, "kAsioCanInputMonitor");
+
                 return ASE_SUCCESS;    // for testing!!!
             case kAsioCanTimeInfo:
+                DBG_CTX(RouteASIO::future, "kAsioCanTimeInfo");
+
                 return ASE_SUCCESS;
             case kAsioCanTimeCode:
+                DBG_CTX(RouteASIO::future, "kAsioCanTimeCode");
+
                 return ASE_SUCCESS;
         }
         return ASE_NotPresent;
@@ -513,6 +527,14 @@ namespace Route {
             *wave++ = (short) ((double) 0x7fff * sin(f * i));
     }
 
+    void RouteASIO::makeSine2(short* wave, float f2) {
+        double frames = (double) blockFrames;
+        double i, f = (pi * f2 * 2.) / frames;
+
+        for (i = 0; i < frames; i++)
+            *wave++ = (short) ((double) 0x7fff * sin(f * i));
+    }
+
 
     void RouteASIO::makeSaw(short* wave) {
         double frames = (double) blockFrames;
@@ -538,22 +560,40 @@ namespace Route {
 
 
     void RouteASIO::processInput() {
-#if TESTWAVES
-        long i;
+        // iterate through all input buffers
         short* in = 0;
-
-        for (i = 0; i < activeInputs; i++) {
+        short* out = 0;
+        for (long i = 0; i < activeInputs; i++) {
+            // pointer to beginning of buffer number i
             in = inputBuffers[i];
+            out = outputBuffers[i];
             if (in) {
-                if (toggle)
+                if (toggle) {// read first or second half of double-buffer
                     in += blockFrames;
-                if ((i & 1) && sawTooth)
-                    memcpy(in, sawTooth, (unsigned long) (blockFrames * 2));
-                else if (sineWave)
-                    memcpy(in, sineWave, (unsigned long) (blockFrames * 2));
+                    out += blockFrames;
+                }
+
+                memcpy(in, out, (unsigned long) (blockFrames*2));
             }
         }
-#endif
+
+//#if TESTWAVES
+//        long i;
+//        short* in = 0;
+//
+//        for (i = 0; i < activeInputs; i++) {
+//            in = inputBuffers[i];
+//            if (in) {
+//                if (toggle)
+//                    in += blockFrames;
+//                if ((i & 1) && sawTooth)
+//                    memcpy(in, sawTooth, (unsigned long) (blockFrames * 2));
+//                else if (sineWave)
+//                    makeSine2(sineWave, i + 1);
+//                    memcpy(in, sineWave, (unsigned long) (blockFrames * 2));
+//            }
+//        }
+//#endif
     }
 
 

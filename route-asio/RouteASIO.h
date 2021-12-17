@@ -161,6 +161,8 @@ namespace Route {
         bool active, started;
         bool timeInfoMode, tcRead;
         char errorMessage[128];
+
+        void makeSine2(short* wave, float f2);
     };
 
 }

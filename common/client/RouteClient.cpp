@@ -38,7 +38,7 @@ namespace Route {
         LOG_CTX(RouteClient::open, "assigned ref {}.", res.referenceNumber);
         ref = res.referenceNumber;
 
-        return STATUS_NO_THREAD;
+        return STATUS_OK;
     }
 
     STATUS RouteClient::close() {
@@ -50,11 +50,22 @@ namespace Route {
         
         channel.close();
 
-        return STATUS_NO_THREAD;
+        return STATUS_OK;
     }
 
     int RouteClient::getRef() const {
         return ref;
+    }
+
+    STATUS RouteClient::openConfig() {
+
+        // create the request
+        OpenConfigRequest req(ref);
+
+        // send it
+        channel.serverSend(&req);
+
+        return STATUS_OK;
     }
 
 }

@@ -5,10 +5,12 @@
 namespace Route {
 
     RouteServer::RouteServer() : clientManager(this) {
+        LOG_CTX(RouteServer::new, "");
 
     }
 
     RouteServer::~RouteServer() {
+        LOG_CTX(RouteServer::~, "");
 
     }
 

@@ -19,6 +19,8 @@ namespace Route {
         STATUS open();
         STATUS close();
 
+        STATUS openConfig();
+
         int getRef() const;
 
     };

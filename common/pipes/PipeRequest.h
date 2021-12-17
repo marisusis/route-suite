@@ -30,7 +30,8 @@ namespace Route {
 
         enum RequestType {
             CLIENT_OPEN = 1,
-            CLIENT_CLOSE,
+            CLIENT_CLOSE = 2,
+            OPEN_CONFIG = 3,
             ENGINE_START,
             ENGINE_STOP,
         };
@@ -147,6 +148,35 @@ namespace Route {
         }
 
         explicit ClientCloseRequest(const int ref) : PipeRequest(PipeRequest::CLIENT_CLOSE), ref(ref) {
+
+        }
+
+        STATUS read(PipeClient* client) override {
+            ValidateSize();
+            ReadTransaction(ref, int);
+            return STATUS_OK;
+        }
+
+        STATUS write(PipeClient* client) override {
+            ValidateTransaction(PipeRequest::write(client, size()));
+            WriteTransaction(ref, int);
+            return STATUS_OK;
+        }
+
+        int size() override {
+            return sizeof(int) + sizeof(ref);
+        }
+
+    };
+
+    struct OpenConfigRequest : public PipeRequest {
+
+        int ref;
+
+        OpenConfigRequest(): ref(-1) {
+        }
+
+        explicit OpenConfigRequest(const int ref) : PipeRequest(PipeRequest::OPEN_CONFIG), ref(ref) {
 
         }
 

@@ -62,6 +62,13 @@ namespace Route {
 
             }
 
+            case PipeRequest::OPEN_CONFIG: {
+                LOG_CTX(RequestDecoder::handleRequest, "received OPEN_CONFIG.");
+
+                // nothing more to do...yet
+                return STATUS_OK;
+            }
+
 
         }
 
