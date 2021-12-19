@@ -133,9 +133,7 @@ namespace Route {
             inputBuffers[i] = nullptr;
             inMap[i] = 0;
         }
-#if TESTWAVES
-        sawTooth = sineWave = 0;
-#endif
+
         for (int i = 0; i < kNumOutputs; i++) {
             outputBuffers[i] = nullptr;
             outMap[i] = 0;
@@ -368,7 +366,7 @@ namespace Route {
                 if (info->channelNum < 0 || info->channelNum >= kNumInputs)
                     goto error;
                 inMap[activeInputs] = info->channelNum;
-                inputBuffers[activeInputs] = new short[blockFrames * 2];    // double buffer
+                inputBuffers[activeInputs] = new float[blockFrames * 2];    // double buffer
                 if (inputBuffers[activeInputs]) {
                     info->buffers[0] = inputBuffers[activeInputs];
                     info->buffers[1] = inputBuffers[activeInputs] + blockFrames;
@@ -387,7 +385,7 @@ namespace Route {
                 if (info->channelNum < 0 || info->channelNum >= kNumOutputs)
                     goto error;
                 outMap[activeOutputs] = info->channelNum;
-                outputBuffers[activeOutputs] = new short[blockFrames * 2];    // double buffer
+                outputBuffers[activeOutputs] = new float[blockFrames * 2];    // double buffer
                 if (outputBuffers[activeOutputs]) {
                     info->buffers[0] = outputBuffers[activeOutputs];
                     info->buffers[1] = outputBuffers[activeOutputs] + blockFrames;
@@ -494,75 +492,20 @@ namespace Route {
 
 
     bool RouteASIO::inputOpen() {
-#if TESTWAVES
-        sineWave = new short[blockFrames];
-        if (!sineWave) {
-            strcpy(errorMessage, "ASIO Sample Driver: Out of Memory!");
-            return false;
-        }
-        makeSine(sineWave);
 
-        sawTooth = new short[blockFrames];
-        if (!sawTooth) {
-            strcpy(errorMessage, "ASIO Sample Driver: Out of Memory!");
-            return false;
-        }
-        makeSaw(sawTooth);
-#endif
         return true;
     }
 
-#if TESTWAVES
-
-#include <math.h>
-
-    const double pi = 0.3141592654;
-
-
-    void RouteASIO::makeSine(short* wave) {
-        double frames = (double) blockFrames;
-        double i, f = (pi * 2.) / frames;
-
-        for (i = 0; i < frames; i++)
-            *wave++ = (short) ((double) 0x7fff * sin(f * i));
-    }
-
-    void RouteASIO::makeSine2(short* wave, float f2) {
-        double frames = (double) blockFrames;
-        double i, f = (pi * f2 * 2.) / frames;
-
-        for (i = 0; i < frames; i++)
-            *wave++ = (short) ((double) 0x7fff * sin(f * i));
-    }
-
-
-    void RouteASIO::makeSaw(short* wave) {
-        double frames = (double) blockFrames;
-        double i, f = 2. / frames;
-
-        for (i = 0; i < frames; i++)
-            *wave++ = (short) ((double) 0x7fff * (-1. + f * i));
-    }
-
-#endif
-
 
     void RouteASIO::inputClose() {
-#if TESTWAVES
-        if (sineWave)
-            delete sineWave;
-        sineWave = 0;
-        if (sawTooth)
-            delete sawTooth;
-        sawTooth = 0;
-#endif
+
     }
 
 
     void RouteASIO::processInput() {
         // iterate through all input buffers
-        short* in = 0;
-        short* out = 0;
+        float* in = 0;
+        float* out = 0;
         for (long i = 0; i < activeInputs; i++) {
             // pointer to beginning of buffer number i
             in = inputBuffers[i];
@@ -576,24 +519,6 @@ namespace Route {
                 memcpy(in, out, (unsigned long) (blockFrames*2));
             }
         }
-
-//#if TESTWAVES
-//        long i;
-//        short* in = 0;
-//
-//        for (i = 0; i < activeInputs; i++) {
-//            in = inputBuffers[i];
-//            if (in) {
-//                if (toggle)
-//                    in += blockFrames;
-//                if ((i & 1) && sawTooth)
-//                    memcpy(in, sawTooth, (unsigned long) (blockFrames * 2));
-//                else if (sineWave)
-//                    makeSine2(sineWave, i + 1);
-//                    memcpy(in, sineWave, (unsigned long) (blockFrames * 2));
-//            }
-//        }
-//#endif
     }
 
 

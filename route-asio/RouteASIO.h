@@ -144,11 +144,9 @@ namespace Route {
         ASIOCallbacks* callbacks;
         ASIOTime asioTime;
         ASIOTimeStamp theSystemTime;
-        short* inputBuffers[kNumInputs * 2];
-        short* outputBuffers[kNumOutputs * 2];
-#if TESTWAVES
-        short* sineWave, * sawTooth;
-#endif
+        float* inputBuffers[kNumInputs * 2];
+        float* outputBuffers[kNumOutputs * 2];
+
         long inMap[kNumInputs];
         long outMap[kNumOutputs];
         long blockFrames;
