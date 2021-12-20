@@ -1,3 +1,4 @@
+#include <shared/SharedStructures.h>
 #include "RouteClient.h"
 #include "utils.h"
 #include "constants.h"
@@ -6,23 +7,23 @@ namespace Route {
 
     RouteClient::RouteClient(const std::string client_name) : clientName(client_name) {
         TRC_CTX(RouteClient::new, "");
-
-        // open client channel
-        STATUS openStatus = channel.open(SERVER_NAME, clientName.c_str());
-
-        if (openStatus != STATUS_OK) {
-            CRT_CTX(RouteClient::open, "unable to establish connection with server! status={}", statusToString(openStatus));
-        }
-
     }
 
     RouteClient::~RouteClient() {
         TRC_CTX(RouteClient::~, "");
     }
 
-
     STATUS RouteClient::open() {
         DBG_CTX(RouteClient::open, "opening client...");
+
+        // open client channel
+        STATUS openStatus = channel.open(SERVER_NAME, clientName.c_str());
+
+        // return with bad status if we cannot open
+        if (openStatus != STATUS_OK) {
+            CRT_CTX(RouteClient::open, "unable to establish connection with server! status={}", statusToString(openStatus));
+            return openStatus;
+        }
 
         // send client open request to server
         ClientOpenRequest req(clientName.c_str(), _getpid());
@@ -38,6 +39,18 @@ namespace Route {
         // set the ref
         LOG_CTX(RouteClient::open, "assigned ref {}.", res.referenceNumber);
         ref = res.referenceNumber;
+
+        // load shared memory
+        shm_info = shared_memory_object(open_only, ROUTE_SHM_INFO, read_only);
+        shm_info_region = mapped_region(shm_info,
+                                        boost::interprocess::read_only,
+                                        0,
+                                        sizeof(route_info));
+
+        // test the shared memory
+        route_info* info = static_cast<route_info *>(shm_info_region.get_address());
+
+        LOG_CTX(RouteClient::open, "name: {0}, version: {1}", info->name, info->version);
 
         return STATUS_OK;
     }
@@ -59,7 +72,6 @@ namespace Route {
     }
 
     STATUS RouteClient::openConfig() {
-
         // create the request
         OpenConfigRequest req(ref);
 
