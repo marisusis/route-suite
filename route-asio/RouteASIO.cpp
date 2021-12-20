@@ -180,7 +180,25 @@ namespace Route {
         DBG_CTX(RouteASIO::init, "");
 
         // open channel
-        routeClient->open();
+        STATUS openStatus = routeClient->open();
+        DBG_CTX(RouteASIO::init, "opened with status {0}", statusToString(openStatus));
+
+        if (openStatus != STATUS_OK) {
+            // unable to open client
+            CRT_CTX(RouteASIO::init, "unable to open driver with status [{0}]", statusToString(openStatus));
+
+            // close inputs and outputs
+            inputClose();
+            outputClose();
+
+            // timer off
+            timerOff();
+
+            return false;
+        }
+
+        // open shared memory
+
 
         sysRef = sysRef;
         if (active)

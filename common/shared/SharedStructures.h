@@ -8,7 +8,7 @@
 namespace Route {
 
     struct route_info {
-        char[256] name;
+        char name[256];
         int version;
     };
 

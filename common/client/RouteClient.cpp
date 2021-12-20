@@ -32,6 +32,7 @@ namespace Route {
 
         if (callStatus != STATUS_OK) {
             CRT_CTX(RouteClient::open, "unable to open client!");
+            return callStatus;
         }
 
         // set the ref

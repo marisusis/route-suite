@@ -1,3 +1,4 @@
+#include "shared/SharedStructures.h"
 #include "utils.h"
 #include "RouteServer.h"
 #include "server/client/ClientManager.h"
@@ -7,10 +8,37 @@ namespace Route {
     RouteServer::RouteServer() : clientManager(this) {
         LOG_CTX(RouteServer::new, "");
 
+        // remove shared memory object if it exists
+        shared_memory_object::remove(ROUTE_SHM_INFO);
+
+        // created shared memory object
+        DBG_CTX(RouteServer::new, "creating shared memory...");
+        shm_info = shared_memory_object(open_or_create, ROUTE_SHM_INFO, read_write);
+
+        // truncate to the size of route_info
+        DBG_CTX(RouteServer::new, "truncating shared memory to {0} bytes...", sizeof(route_info));
+        shm_info.truncate(sizeof(route_info));
+
+        // create a mapped region
+        DBG_CTX(RouteServer::new, "creating mapped region");
+        shm_info_region = mapped_region(shm_info,
+                                        read_write,
+                                        0,
+                                        sizeof(route_info));
+
+        // create the info
+        route_info* info = static_cast<route_info *>(shm_info_region.get_address());
+        strcpy(info->name, "RouteServer by Maris");
+        info->version = 1234;
+
     }
 
     RouteServer::~RouteServer() {
         LOG_CTX(RouteServer::~, "");
+
+        // remove shared memory object
+        DBG_CTX(RouteServer::~, "destroying shared memory [{0}]", ROUTE_SHM_INFO);
+        shared_memory_object::remove(ROUTE_SHM_INFO);
 
     }
 
