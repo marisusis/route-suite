@@ -14,8 +14,10 @@ namespace Route {
     private:
         std::map<int, Client*> clients;
         RouteServer* server;
+        boolean activeRefs[MAX_CLIENTS];
 
-
+        STATUS freeRef(int ref);
+        STATUS allocateRef(int& ref);
 
     public:
         ClientManager(RouteServer* server);

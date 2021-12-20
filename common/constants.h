@@ -22,6 +22,8 @@
 // shared memory
 #define ROUTE_SHM_INFO GLOBAL_NAMESPACE_PREFIX "_" "inf"
 
+#define MAX_CLIENTS 256
+
 // Status codes
 //#define STATUS_OK ((STATUS) 0x1)
 //#define STATUS_READ_OK STATUS_OK

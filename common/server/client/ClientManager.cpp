@@ -6,6 +6,11 @@ namespace Route {
 
     ClientManager::ClientManager(RouteServer* server) : server(server) {
         DBG_CTX(ClientManager::new, "");
+
+        // set all active refs to disabled
+        for (int i = 0; i < MAX_CLIENTS; i++) {
+            activeRefs[i] = false;
+        }
     }
 
     ClientManager::~ClientManager() {
@@ -42,7 +47,12 @@ namespace Route {
         DBG_CTX(ClientManager::addClient, "adding client [{}/{}]...", clientName, pid);
 
         // get a ref
-        *ref = server->getNewReferenceNumber();
+        STATUS refGet = allocateRef(*ref);
+        if (refGet != STATUS_OK) {
+            CRT_CTX(ClientManager::addClient, "unable to assign refnum, limit reached!");
+            return refGet;
+        }
+
         DBG_CTX(ClientManager::addClient, "assigned ref [{}] to client [{}/{}]...", *ref, clientName, pid);
 
         // create the client
@@ -75,6 +85,9 @@ namespace Route {
         // close the client
         client->close();
 
+        // free its refnum
+        freeRef(ref);
+
         // erase the entry
         clients.erase(find);
 
@@ -82,6 +95,48 @@ namespace Route {
         delete client;
 
         return STATUS_OK;
+    }
+
+    STATUS ClientManager::freeRef(int ref) {
+
+        // check if the ref is active
+        if (!activeRefs[ref]) return STATUS_NO_REF;
+
+        // free the reference number
+        activeRefs[ref] = false;
+
+        // all OK
+        return STATUS_OK;
+
+    }
+
+    STATUS ClientManager::allocateRef(int& ref) {
+        // start at 0
+        ref = 0;
+
+        // find the next free reference number
+        while (ref < MAX_CLIENTS) {
+
+            // check if ref exists
+            if (!activeRefs[ref]) {
+                // ref is free
+                break;
+            }
+
+            // next ref number
+            ref++;
+        }
+
+        // we got a problem if we went past the limit
+        if (ref >= MAX_CLIENTS) {
+            return STATUS_ERROR;
+        }
+
+        // allocate ref
+        activeRefs[ref] = true;
+
+        return STATUS_OK;
+
     }
 
 }
