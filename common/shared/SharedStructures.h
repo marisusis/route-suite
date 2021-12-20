@@ -9,7 +9,9 @@ namespace Route {
 
     struct route_info {
         char name[256];
-        int version;
+        char version[16];
+        int sampleRate;
+        int bufferSize;
     };
 
 }

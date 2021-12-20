@@ -117,7 +117,7 @@ namespace Route {
         // create RouteClient
         routeClient = new RouteClient("RouteASIO");
 
-        blockFrames = kBlockFrames;
+        blockFrames = 1024;
         inputLatency = blockFrames;        // typically
         outputLatency = blockFrames * 2;
         // typically blockFrames * 2; try to get 1 by offering direct buffer
@@ -197,7 +197,10 @@ namespace Route {
             return false;
         }
 
-        // open shared memory
+        // update block frames
+        blockFrames = routeClient->getBufferSize();
+        inputLatency = blockFrames;        // typically
+        outputLatency = blockFrames * 2;
 
 
         sysRef = sysRef;
@@ -269,7 +272,7 @@ namespace Route {
     ASIOError RouteASIO::canSampleRate(ASIOSampleRate sampleRate) {
         LOG_CTX(RouteASIO::canSampleRate, "check sample rate {}hz", sampleRate);
 
-        if (sampleRate == 44100. || sampleRate == 48000.)        // allow these rates only
+        if (sampleRate == routeClient->getSampleRate())        // allow these rates only
             return ASE_OK;
         return ASE_NoClock;
     }
@@ -277,7 +280,7 @@ namespace Route {
 
     ASIOError RouteASIO::getSampleRate(ASIOSampleRate* sampleRate) {
         LOG_CTX(RouteASIO::getSampleRate, "get sample rate {}hz", *sampleRate);
-        *sampleRate = this->sampleRate;
+        *sampleRate = routeClient->getSampleRate();
         return ASE_OK;
     }
 
@@ -285,7 +288,7 @@ namespace Route {
     ASIOError RouteASIO::setSampleRate(ASIOSampleRate sampleRate) {
         LOG_CTX(RouteASIO::setSampleRate, "set sample rate {}hz", sampleRate);
 
-        if (sampleRate != 44100. && sampleRate != 48000.)
+        if (sampleRate != routeClient->getSampleRate())
             return ASE_NoClock;
         if (sampleRate != this->sampleRate) {
             this->sampleRate = sampleRate;
@@ -378,7 +381,7 @@ namespace Route {
 
         activeInputs = 0;
         activeOutputs = 0;
-        blockFrames = bufferSize;
+        blockFrames = routeClient->getBufferSize(); // NEW: get buffer size from client; bufferSize;
         for (i = 0; i < numChannels; i++, info++) {
             if (info->isInput) {
                 if (info->channelNum < 0 || info->channelNum >= kNumInputs)

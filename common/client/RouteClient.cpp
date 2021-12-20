@@ -47,10 +47,10 @@ namespace Route {
                                         0,
                                         sizeof(route_info));
 
-        // test the shared memory
-        route_info* info = static_cast<route_info *>(shm_info_region.get_address());
+        // load the info from shared memory
+        info = static_cast<route_info *>(shm_info_region.get_address());
 
-        LOG_CTX(RouteClient::open, "name: {0}, version: {1}", info->name, info->version);
+        LOG_CTX(RouteClient::open, "connected to {2} v{3}; running at {0}smp/{1}hz", info->bufferSize, info->sampleRate, info->name, info->version);
 
         return STATUS_OK;
     }
@@ -80,5 +80,14 @@ namespace Route {
 
         return STATUS_OK;
     }
+
+    int RouteClient::getSampleRate() const {
+        return info->sampleRate;
+    }
+
+    int RouteClient::getBufferSize() const {
+        return info->bufferSize;
+    }
+
 
 }

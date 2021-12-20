@@ -29,7 +29,12 @@ namespace Route {
         // create the info
         route_info* info = static_cast<route_info *>(shm_info_region.get_address());
         strcpy(info->name, "RouteServer by Maris");
-        info->version = 1234;
+
+        strcpy(info->version, "0.0.1");
+
+        // default sample rate and buffer size
+        info->sampleRate = 48000;
+        info->bufferSize = 256;
 
     }
 
