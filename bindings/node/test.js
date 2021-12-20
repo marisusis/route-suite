@@ -17,11 +17,30 @@ for (let i = 0; i < count; i++) {
 
 }
 
+process.on('SIGINT', function() {
+
+    for (let i = 0; i < count; i++) {
+
+        // close client
+        clients[i].close();
+
+    }
+
+    process.exit();
+});
 
 
 // sleep
-const sleepTime = 4000;
+const sleepTime = 10000;
 console.log(`sleeping for ${sleepTime}ms...`);
+
+for (let i = 0; i < count; i++) {
+
+    // close client
+    console.log(`client ${i} ref ${clients[i].getRef()}`);
+
+}
+
 setTimeout(function(){
     for (let i = 0; i < count; i++) {
 
@@ -30,4 +49,6 @@ setTimeout(function(){
 
     }
 },sleepTime);
+
+
 

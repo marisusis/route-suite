@@ -19,6 +19,11 @@
 #define PIPE_SERVER_TAG "server"
 #define PIPE_CLIENT_TAG "client"
 
+// shared memory
+#define ROUTE_SHM_INFO GLOBAL_NAMESPACE_PREFIX "_" "inf"
+
+#define MAX_CLIENTS 256
+
 // Status codes
 //#define STATUS_OK ((STATUS) 0x1)
 //#define STATUS_READ_OK STATUS_OK

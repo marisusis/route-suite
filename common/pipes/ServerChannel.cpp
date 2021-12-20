@@ -15,7 +15,7 @@ namespace Route {
         DBG_CTX(ServerChannel::~, "");
 
         // create an iterator for the list of clients
-        std::list<ChannelConnectionThread*>::iterator  iter;
+        std::list<ChannelConnectionThread*>::iterator iter;
 
         // shut down the clients
         for (iter = channelConnections.begin(); iter != channelConnections.end(); iter++) {

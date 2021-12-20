@@ -51,7 +51,8 @@ add_library(RouteCommon STATIC
             common/utils.h common/pipes/ServerChannel.cpp common/pipes/ServerChannel.h common/thread/Thread.cpp common/thread/Thread.h common/thread/Event.cpp common/thread/Event.h common/thread/Mutex.cpp common/thread/Mutex.h common/thread/Event.cpp common/thread/Event.h common/pipes/PipeRequest.h common/server/RouteServer.cpp common/server/RouteServer.h common/pipes/ClientChannel.cpp common/pipes/ClientChannel.h common/pipes/RequestDecoder.cpp common/pipes/RequestDecoder.h common/client/RouteClient.cpp common/client/RouteClient.h common/utils.cpp common/server/client/ClientManager.cpp common/server/client/ClientManager.h common/server/client/Client.cpp common/server/client/Client.h common/pipes/NotifyClientChannel.cpp common/pipes/NotifyClientChannel.h common/shared/SharedStructures.h)
 target_link_libraries(RouteCommon
         PUBLIC CONAN_PKG::argparse
-        PUBLIC CONAN_PKG::spdlog)
+        PUBLIC CONAN_PKG::spdlog
+        PUBLIC CONAN_PKG::boost)
 target_include_directories(RouteCommon
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/common)
 
