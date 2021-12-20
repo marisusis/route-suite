@@ -18,10 +18,11 @@
 // a sine wave, and the right one with a sawtooth
 
 enum {
-    kBlockFrames = 256,
+    kBlockFrames = 512,
     kNumInputs = 16,
     kNumOutputs = 16
 };
+
 
 
 #include "rpc.h"
@@ -36,6 +37,9 @@ enum {
 #include "iasiodrv.h"
 
 namespace Route {
+
+    class ASIODebugger;
+
 
     class RouteASIO : public IASIO, public CUnknown {
     public:
@@ -60,6 +64,8 @@ namespace Route {
         // IUnknown
         virtual HRESULT STDMETHODCALLTYPE NonDelegatingQueryInterface(REFIID riid, void** ppvObject);
 
+        double sampleRate;
+        long blockFrames;
 
         ASIOBool init(void* sysRef);
 
@@ -115,14 +121,6 @@ namespace Route {
 
         bool inputOpen();
 
-#if TESTWAVES
-
-        void makeSine(short* wave);
-
-        void makeSaw(short* wave);
-
-#endif
-
         void inputClose();
 
         void processInput();
@@ -140,16 +138,15 @@ namespace Route {
         void bufferSwitchX();
 
         double samplePosition;
-        double sampleRate;
         ASIOCallbacks* callbacks;
         ASIOTime asioTime;
         ASIOTimeStamp theSystemTime;
+        ASIODebugger* dbg;
         float* inputBuffers[kNumInputs * 2];
         float* outputBuffers[kNumOutputs * 2];
 
         long inMap[kNumInputs];
         long outMap[kNumOutputs];
-        long blockFrames;
         long inputLatency;
         long outputLatency;
         long activeInputs;
@@ -161,6 +158,34 @@ namespace Route {
         char errorMessage[128];
 
         void makeSine2(short* wave, float f2);
+    };
+
+    class ASIODebugger : public Runnable {
+
+    private:
+        Thread thread;
+        RouteASIO* asio;
+        long count = 0;
+        std::chrono::high_resolution_clock::time_point lastTime;
+        double lastDiff = 0;
+        double avgBufferTimeMsec = 0;
+        int loopTime = 1000;
+
+    public:
+
+        ASIODebugger(RouteASIO* asio, int loopTime);
+        ~ASIODebugger();
+
+        void start();
+
+        void bufferTick();
+
+        void stop();
+
+        STATUS init() override;
+
+        STATUS execute() override;
+
     };
 
 }

@@ -7,7 +7,7 @@
 int main() {
     std::cout << "Hello, World!" << std::endl;
 
-    spdlog::set_level(spdlog::level::info);
+    spdlog::set_level(spdlog::level::debug);
     spdlog::set_pattern("[%H:%M:%S:%e] [thread %t] %^[%l] %v%$");
 
     // create route server instance

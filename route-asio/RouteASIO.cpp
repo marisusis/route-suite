@@ -108,9 +108,10 @@ namespace Route {
     }
 
     RouteASIO::RouteASIO(LPUNKNOWN pUnk, HRESULT* phr) : CUnknown("ASIOSAMPLE", pUnk, phr) {
-
-        // create logger
+        // configure logger
         spdlog::set_level(spdlog::level::debug);
+        spdlog::set_pattern("[%H:%M:%S:%e] [thread %t] %^[%l] %v%$");
+
         DBG_CTX(RouteASIO::new, "");
         LOG_CTX(RouteASIO::new, "hello!");
 
@@ -142,8 +143,10 @@ namespace Route {
         activeInputs = activeOutputs = 0;
         toggle = 0;
 
-    }
+        // create debugger
+        dbg = new ASIODebugger(this, 1000);
 
+    }
 
     RouteASIO::~RouteASIO() {
         DBG_CTX(RouteASIO::~, "");
@@ -159,7 +162,6 @@ namespace Route {
         inputClose();
         disposeBuffers();
     }
-
 
     void RouteASIO::getDriverName(char* name) {
         strcpy(name, "Route ASIO");
@@ -203,6 +205,9 @@ namespace Route {
     ASIOError RouteASIO::start() {
         DBG_CTX(RouteASIO::start, "");
 
+        // start debugger
+        dbg->start();
+
         if (callbacks) {
             started = false;
             samplePosition = 0;
@@ -220,6 +225,10 @@ namespace Route {
 
     ASIOError RouteASIO::stop() {
         DBG_CTX(RouteASIO::stop, "");
+
+        // stop debugger
+        dbg->stop();
+
         started = false;
         timerOff();        // de-activate 'hardware'
         return ASE_OK;
@@ -509,11 +518,11 @@ namespace Route {
         for (long i = 0; i < activeInputs; i++) {
             // pointer to beginning of buffer number i
             in = inputBuffers[i];
-            out = outputBuffers[i];
+            out = outputBuffers[i] + blockFrames;
             if (in) {
                 if (toggle) {// read first or second half of double-buffer
                     in += blockFrames;
-                    out += blockFrames;
+                    out -= blockFrames;
                 }
 
                 memcpy(in, out, (unsigned long) (blockFrames*2));
@@ -541,6 +550,10 @@ namespace Route {
 
     void RouteASIO::bufferSwitch() {
         if (started && callbacks) {
+
+            // trigger debugger buffer switch tick
+            dbg->bufferTick();
+
             getNanoSeconds(&theSystemTime);            // latch system time
             processInput();
             processOutput();
@@ -570,6 +583,70 @@ namespace Route {
 
     ASIOError RouteASIO::outputReady() {
         return ASE_NotPresent;
+    }
+
+    ASIODebugger::ASIODebugger(RouteASIO *asio, int loopTime): thread(this, "asio_debugger"), asio(asio), loopTime(loopTime) {
+        DBG_CTX(ASIODebugger::new, "running with period of {0}ms", loopTime);
+    }
+
+    ASIODebugger::~ASIODebugger() {
+        DBG_CTX(ASIODebugger::~, "");
+    }
+
+    void ASIODebugger::start() {
+        DBG_CTX(ASIODebugger::start, "");
+
+        // set starting time
+        lastTime = std::chrono::high_resolution_clock::now();
+
+        // start the thread
+        thread.start();
+    }
+
+    void ASIODebugger::stop() {
+        DBG_CTX(ASIODebugger::stop, "");
+
+        // stop the thread
+        thread.stop();
+    }
+
+    void ASIODebugger::bufferTick() {
+
+        // get current time
+        const auto nowTime = std::chrono::high_resolution_clock::now();
+
+        // calculate difference
+        const auto dur = std::chrono::duration_cast<std::chrono::microseconds>(nowTime - lastTime).count();
+        lastDiff = dur;
+
+        // calculate cumulative moving average
+        const double old = avgBufferTimeMsec;
+        avgBufferTimeMsec = old + (dur - old) / ( count + 1 );
+
+        // increment count
+        count++;
+
+        // set last time
+        lastTime = std::chrono::high_resolution_clock::now();
+    }
+
+    STATUS ASIODebugger::init() {
+        return Runnable::init();
+    }
+
+    STATUS ASIODebugger::execute() {
+        // sleep
+        std::this_thread::sleep_for(std::chrono::milliseconds(loopTime));
+
+        // print average buffer time
+        DBG_CTX(ASIODebugger::execute, "{3}smp/{1}hz, last: {4}, avg: {0}ms, tot: {2}ms",
+                avgBufferTimeMsec/1000.0,
+                asio->sampleRate,
+                (double (asio->blockFrames)) / asio->sampleRate * 1000,
+                asio->blockFrames,
+                lastDiff/1000.0);
+
+        return STATUS_OK;
     }
 
 }

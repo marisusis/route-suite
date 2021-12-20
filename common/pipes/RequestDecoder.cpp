@@ -59,7 +59,6 @@ namespace Route {
                 channelThread->close();
 
                 return STATUS_OK;
-
             }
 
             case PipeRequest::OPEN_CONFIG: {
