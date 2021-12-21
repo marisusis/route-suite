@@ -28,13 +28,13 @@ namespace Route {
                                         sizeof(route_server_info));
 
         // create the info
-        route_server_info* info = static_cast<route_server_info *>(shm_info_region.get_address());
+        info = static_cast<route_server_info *>(shm_info_region.get_address());
         strcpy(info->name, "RouteServer by Maris");
         strcpy(info->version, "0.0.1");
 
         // default sample rate and buffer size
         info->sampleRate = 44100;
-        info->bufferSize = 256;
+        info->bufferSize = 128;
         info->channelCount = MAX_CHANNELS;
     }
 
@@ -99,6 +99,10 @@ namespace Route {
 
     BufferManager *RouteServer::getBufferManager() {
         return &bufferManager;
+    }
+
+    route_server_info* RouteServer::getServerInfo() {
+        return info;
     }
 
 }

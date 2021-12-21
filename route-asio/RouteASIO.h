@@ -1,19 +1,9 @@
-/*
-	Steinberg Audio Stream I/O API
-	(c) 1999, Steinberg Soft- und Hardware GmbH
-
-	asiosmpl.h
-	
-	test implementation of asio
-*/
-
 #ifndef _asiosmpl_
 #define _asiosmpl_
 
 #include "asiosys.h"
 #include "client/RouteClient.h"
 
-#define TESTWAVES 1
 // when true, will feed the left input (to host) with
 // a sine wave, and the right one with a sawtooth
 
@@ -39,11 +29,13 @@ enum {
 namespace Route {
 
     class ASIODebugger;
+    class ASIOClock;
 
 
     class RouteASIO : public IASIO, public CUnknown {
 
     friend class ASIODebugger;
+    friend class ASIOClock;
 
     public:
         RouteASIO(LPUNKNOWN pUnk, HRESULT* phr);
@@ -117,22 +109,14 @@ namespace Route {
 
         long getMilliSeconds() { return milliSeconds; }
 
-
-    private:
         RouteClient* routeClient;
 
 
+    private:
+
         friend void myTimer();
 
-        bool inputOpen();
-
-        void inputClose();
-
         void processInput();
-
-        bool outputOpen();
-
-        void outputClose();
 
         void processOutput();
 
@@ -147,13 +131,10 @@ namespace Route {
         ASIOTime asioTime;
         ASIOTimeStamp theSystemTime;
         ASIODebugger* dbg;
+        ASIOClock* clock;
         float** inputBuffers;
         float** outputBuffers;
 
-        long inputLatency;
-        long outputLatency;
-        long activeInputs;
-        long activeOutputs;
         long toggle;
         long milliSeconds;
         bool active, started;

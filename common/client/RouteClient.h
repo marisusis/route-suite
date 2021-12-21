@@ -16,6 +16,15 @@ using boost::interprocess::read_write;
 
 namespace Route {
 
+    enum ClientStatus {
+
+        OPEN,
+        OPENING,
+        CLOSING,
+        CLOSED
+
+    };
+
     class RouteClient {
 
     private:
@@ -30,13 +39,14 @@ namespace Route {
         mapped_region shm_clients_region;
         route_client clientInfo;
         route_server_info* info;
+        ClientStatus state = CLOSED;
 
         // buffers
         route_buffer* buffers = nullptr;
 
 
     public:
-        RouteClient(const std::string client_name);
+        RouteClient(std::string client_name);
         ~RouteClient();
 
         STATUS open();
@@ -52,14 +62,12 @@ namespace Route {
         int getBufferSize() const;
         int getChannelCount() const;
 
+        int getOutputLatency() const;
+        int getInputLatency() const;
+
+        ClientStatus getState() const;
+
         route_buffer* getBuffer(bool input, int index);
-
-        STATUS copyFromBuffer(int index, float* dest, int blockSize, boolean second);
-        STATUS copyToBuffer(int index, float* source, int blockSize, boolean second);
-
-//        STATUS readInput(int index, float* dest);
-//
-//        STATUS writeOutput(int index, float* src);
 
     };
 

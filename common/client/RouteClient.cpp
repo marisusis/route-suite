@@ -16,6 +16,8 @@ namespace Route {
     STATUS RouteClient::open() {
         DBG_CTX(RouteClient::open, "opening client...");
 
+        state = ClientStatus::OPENING;
+
         // open client channel
         STATUS openStatus = channel.open(SERVER_NAME, clientName.c_str());
 
@@ -72,17 +74,27 @@ namespace Route {
 
         LOG_CTX(RouteClient::open, "connected to [{2}/v{3}]; running at {0}smp/{1}hz", info->bufferSize, info->sampleRate, info->name, info->version);
 
+        // client is now open
+        state = ClientStatus::OPEN;
+
         return STATUS_OK;
     }
 
     STATUS RouteClient::close() {
         DBG_CTX(RouteClient::open, "closing client...");
 
+        // start closing client
+        state = ClientStatus::CLOSING;
+
         ClientCloseRequest req(ref);
 
         channel.serverSend(&req);
-        
+
         channel.close();
+
+
+        // client is closed
+        state = ClientStatus::CLOSED;
 
         return STATUS_OK;
     }
@@ -111,6 +123,14 @@ namespace Route {
 
     int RouteClient::getChannelCount() const {
         return info->channelCount;
+    }
+
+    int RouteClient::getInputLatency() const {
+        return clientInfo.inputLatency;
+    }
+
+    int RouteClient::getOutputLatency() const {
+        return clientInfo.outputLatency;
     }
 
     route_buffer* RouteClient::getBuffer(bool input, int index) {
@@ -145,6 +165,9 @@ namespace Route {
         }
     }
 
+    ClientStatus RouteClient::getState() const {
+        return state;
+    }
 
 
 }

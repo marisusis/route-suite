@@ -25,6 +25,7 @@
 #include "utils.h"
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
+#include "ASIOClock.h"
 
 #define REG_NAME "Debug ASIO v2"
 #define LOG_PATH "C:/Users/maris/CLionProjects/RouteExamples/cmake-build-debug/examples/debug-asio-driver/driver.log"
@@ -54,9 +55,8 @@ CLSID IID_ASIO_DRIVER = {0x12345678, 0xd565, 0x11d2, {0x85, 0x4f, 0x0, 0xa0, 0xc
 CFactoryTemplate g_Templates[1] = {
         {L"ASIOSAMPLE", &IID_ASIO_DRIVER, Route::RouteASIO::CreateInstance}
 };
+
 int g_cTemplates = sizeof(g_Templates) / sizeof(g_Templates[0]);
-
-
 
 extern LONG RegisterAsioDriver(CLSID, char*, char*, char*, char*);
 
@@ -112,15 +112,15 @@ namespace Route {
         spdlog::set_level(spdlog::level::debug);
         spdlog::set_pattern("[%H:%M:%S:%e] [thread %t] %^[%l] %v%$");
 
-        DBG_CTX(RouteASIO::new, "");
-        LOG_CTX(RouteASIO::new, "hello!");
+        LOG_CTX(RouteASIO::new, "Hello, world!");
 
         // create RouteClient
         routeClient = new RouteClient("RouteASIO");
 
+        // create ASIO clock
+        clock = new ASIOClock(this);
+
         blockFrames = 1024;
-        inputLatency = blockFrames;        // typically
-        outputLatency = blockFrames * 2;
         // typically blockFrames * 2; try to get 1 by offering direct buffer
         // access, and using asioPostOutput for lower latency
         samplePosition = 0;
@@ -132,7 +132,6 @@ namespace Route {
         tcRead = false;
 
         callbacks = nullptr;
-        activeInputs = activeOutputs = 0;
         toggle = 0;
 
         // create debugger
@@ -150,8 +149,6 @@ namespace Route {
         delete routeClient;
 
         stop();
-        outputClose();
-        inputClose();
         disposeBuffers();
     }
 
@@ -181,10 +178,6 @@ namespace Route {
             // unable to open client
             CRT_CTX(RouteASIO::init, "unable to open driver with status [{0}]", statusToString(openStatus));
 
-            // close inputs and outputs
-            inputClose();
-            outputClose();
-
             // timer off
             timerOff();
 
@@ -193,8 +186,6 @@ namespace Route {
 
         // update block frames
         blockFrames = routeClient->getBufferSize();
-        inputLatency = blockFrames;        // typically
-        outputLatency = blockFrames * 2;
 
         // allocate memory for buffers
         inputBuffers = new float*[routeClient->getChannelCount()]; //static_cast<float *>(malloc(sizeof(float) * MAX_BUFFER_SIZE * 2));
@@ -202,27 +193,17 @@ namespace Route {
 
         // create empty buffers
         for (int i = 0; i < routeClient->getChannelCount(); i++) {
-            inputBuffers[i] = new float[routeClient->getBufferSize() * 2];
-            outputBuffers[i] = new float[routeClient->getBufferSize() * 2];
-
-            memset(inputBuffers[i], 0, routeClient->getBufferSize() * 2 * sizeof(float));
-            memset(outputBuffers[i], 0, routeClient->getBufferSize() * 2 * sizeof(float));
+            inputBuffers[i] = nullptr;
+            outputBuffers[i] = nullptr;
         }
 
         sysRef = sysRef;
-        if (active)
-            return true;
-        strcpy(errorMessage, "ASIO Driver open Failure!");
-        if (inputOpen()) {
-            if (outputOpen()) {
-                active = true;
-                return true;
-            }
-        }
-        timerOff();        // de-activate 'hardware'
 
-        outputClose();
-        inputClose();
+        if (routeClient->getState() == ClientStatus::OPEN) return true;
+
+        timerOff();
+        // de-activate 'hardware'
+
         return false;
     }
 
@@ -231,13 +212,16 @@ namespace Route {
         DBG_CTX(RouteASIO::start, "");
 
         // start debugger
-        dbg->start();
+//        dbg->start();
 
         if (callbacks) {
             started = false;
             samplePosition = 0;
             theSystemTime.lo = theSystemTime.hi = 0;
             toggle = 0;
+
+            // start clock
+            clock->start();
 
             timerOn();            // activate 'hardware'
             started = true;
@@ -252,9 +236,13 @@ namespace Route {
         DBG_CTX(RouteASIO::stop, "");
 
         // stop debugger
-        dbg->stop();
+//        dbg->stop();
 
         started = false;
+
+        // stop clock
+        clock->stop();
+
         timerOff();        // de-activate 'hardware'
         return ASE_OK;
     }
@@ -268,15 +256,15 @@ namespace Route {
 
 
     ASIOError RouteASIO::getLatencies(long* _inputLatency, long* _outputLatency) {
-        *_inputLatency = inputLatency;
-        *_outputLatency = outputLatency;
+        *_inputLatency = routeClient->getInputLatency();
+        *_outputLatency = routeClient->getOutputLatency();
         return ASE_OK;
     }
 
 
     ASIOError RouteASIO::getBufferSize(long* minSize, long* maxSize,
                                        long* preferredSize, long* granularity) {
-        *minSize = *maxSize = *preferredSize = blockFrames;        // allow this size only
+        *minSize = *maxSize = *preferredSize = routeClient->getBufferSize();        // allow this size only
         *granularity = 0;
         return ASE_OK;
     }
@@ -365,7 +353,7 @@ namespace Route {
         route_channel_info ch = routeClient->getChannelInfo(info->isInput, info->channel);
 
         // set values from config
-        strcpy(info->name, ch.name);
+        memcpy(info->name, ch.name, 32 * sizeof(char));
         info->isActive = ch.active ? ASIOTrue : ASIOFalse;
 
         return ASE_OK;
@@ -377,14 +365,19 @@ namespace Route {
         DBG_CTX(RouteASIO::createBuffers, "numChannels={}, bufferSize={}", numChannels, bufferSize);
 
         ASIOBufferInfo* info = bufferInfos;
-        long i;
-        bool notEnoughMem = false;
 
-        activeInputs = 0;
-        activeOutputs = 0;
-        blockFrames = routeClient->getBufferSize(); // NEW: get buffer size from client; bufferSize;
+        blockFrames = routeClient->getBufferSize();
 
-        for (i = 0; i < routeClient->getChannelCount() * 2; i++, info++) {
+        // initialize buffers
+        for (int i = 0; i < routeClient->getChannelCount(); i++) {
+            inputBuffers[i] = new float[routeClient->getBufferSize() * 2];
+            outputBuffers[i] = new float[routeClient->getBufferSize() * 2];
+
+            memset(inputBuffers[i], 0, routeClient->getBufferSize() * 2 * sizeof(float));
+            memset(outputBuffers[i], 0, routeClient->getBufferSize() * 2 * sizeof(float));
+        }
+
+        for (int i = 0; i < numChannels; i++, info++) {
             if (info->channelNum < 0 || info->channelNum >= routeClient->getChannelCount()) {
                 CRT_CTX(RouteASIO::createBuffers, "channel index {0} out of range", info->channelNum);
             }
@@ -424,8 +417,8 @@ namespace Route {
         stop();
 
 //        for (int i = 0; i < MAX_CHANNELS; i++) {
-//            delete inputBuffers[i];
-//            delete outputBuffers[i];
+//            delete [] inputBuffers[i];
+//            delete [] outputBuffers[i];
 //        }
 
 //        for (i = 0; i < activeInputs; i++)
@@ -477,20 +470,11 @@ namespace Route {
                 DBG_CTX(RouteASIO::future, "kAsioCanTimeCode");
 
                 return ASE_SUCCESS;
+            default:
+                DBG_CTX(RouteASIO::future, "unknown");
         }
         return ASE_NotPresent;
     }
-
-    bool RouteASIO::inputOpen() {
-
-        return true;
-    }
-
-
-    void RouteASIO::inputClose() {
-
-    }
-
 
     void RouteASIO::processInput() {
         for (int i = 0; i < routeClient->getChannelCount(); i++) {
@@ -509,20 +493,6 @@ namespace Route {
         }
     }
 
-
-// output
-
-
-
-    bool RouteASIO::outputOpen() {
-        return true;
-    }
-
-
-    void RouteASIO::outputClose() {
-    }
-
-
     void RouteASIO::processOutput() {
         for (int i = 0; i < routeClient->getChannelCount(); i++) {
 
@@ -537,6 +507,11 @@ namespace Route {
             } else {
                 memcpy(buf->buffer1, outputBuffers[i], blockFrames * sizeof(float));
             }
+        }
+
+        for (int i = 0; i < routeClient->getChannelCount(); i++) {
+            memcpy(routeClient->getBuffer(true, i)->buffer1, routeClient->getBuffer(false, i)->buffer1, blockFrames * sizeof(float));
+            memcpy(routeClient->getBuffer(true, i)->buffer2, routeClient->getBuffer(false, i)->buffer2, blockFrames * sizeof(float));
         }
 
     }

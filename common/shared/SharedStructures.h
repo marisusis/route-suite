@@ -33,6 +33,9 @@ namespace Route {
 
         bool usesAudio;
 
+        int inputLatency;
+        int outputLatency;
+
         int inputBufferMap[MAX_CHANNELS];
         int outputBufferMap[MAX_CHANNELS];
 

@@ -114,6 +114,10 @@ namespace Route {
             memcpy(&(routeClient->outputChannels[i]), outInfo, sizeof(route_channel_info));
         }
 
+        // set default I/O latency
+        routeClient->inputLatency = server->getServerInfo()->bufferSize;
+        routeClient->outputLatency = server->getServerInfo()->bufferSize * 2;
+
         // open the client
         client->open();
 

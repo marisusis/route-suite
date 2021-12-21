@@ -42,7 +42,7 @@ static DWORD __stdcall ASIOThread (void *param)
 	{
 		if (theDriver)
 		{
-			theDriver->bufferSwitch ();
+//			theDriver->bufferSwitch ();
 			Sleep (theDriver->getMilliSeconds ());
 		}
 		else

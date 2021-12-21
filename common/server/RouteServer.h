@@ -28,6 +28,7 @@ namespace Route {
         int currentReferenceNumber = 1;
         shared_memory_object shm_info;
         mapped_region shm_info_region;
+        route_server_info* info;
 
     public:
         RouteServer();
@@ -41,6 +42,8 @@ namespace Route {
 
         ClientManager* getClientManager();
         BufferManager* getBufferManager();
+
+        route_server_info* getServerInfo();
 
         STATUS tempAction(const std::string& action);
 

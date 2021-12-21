@@ -8,7 +8,7 @@ add_library(RouteASIO SHARED
         wintimer.cpp
         RouteASIO.def
         RouteASIO.cpp
-        RouteASIO.h)
+        RouteASIO.h ASIOClock.cpp ASIOClock.h)
 
 target_compile_definitions(RouteASIO PRIVATE _WINDLL)
 
