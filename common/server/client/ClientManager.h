@@ -2,8 +2,19 @@
 #define ROUTE_SUITE_CLIENTMANAGER_H
 
 #include <map>
+#include "shared/SharedStructures.h"
 #include "types.h"
 #include "Client.h"
+#include "boost/interprocess/shared_memory_object.hpp"
+#include "boost/interprocess/mapped_region.hpp"
+
+using boost::interprocess::shared_memory_object;
+using boost::interprocess::mapped_region;
+using boost::interprocess::create_only;
+using boost::interprocess::open_or_create;
+using boost::interprocess::open_only;
+using boost::interprocess::read_only;
+using boost::interprocess::read_write;
 
 namespace Route {
 
@@ -15,6 +26,9 @@ namespace Route {
         std::map<int, Client*> clients;
         RouteServer* server;
         boolean activeRefs[MAX_CLIENTS];
+        route_client* shmClients;
+        shared_memory_object shm_clients;
+        mapped_region shm_clients_region;
 
         STATUS freeRef(int ref);
         STATUS allocateRef(int& ref);

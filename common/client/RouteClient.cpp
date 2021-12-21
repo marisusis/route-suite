@@ -42,13 +42,33 @@ namespace Route {
 
         // load shared memory
         shm_info = shared_memory_object(open_only, ROUTE_SHM_INFO, read_only);
+        shm_buffers = shared_memory_object(open_only, ROUTE_SHM_BUFFERS, read_write);
+        shm_clients = shared_memory_object(open_only, ROUTE_SHM_CLIENTS, read_only);
+
+
         shm_info_region = mapped_region(shm_info,
                                         boost::interprocess::read_only,
                                         0,
-                                        sizeof(route_info));
+                                        sizeof(route_server_info));
+
+        shm_buffers_region = mapped_region(shm_buffers,
+                                        boost::interprocess::read_write,
+                                        0,
+                                        sizeof(route_buffer) * MAX_BUFFERS);
+
+        shm_clients_region = mapped_region(shm_clients,
+                                           read_only,
+                                           0,
+                                           sizeof(route_client) * MAX_CLIENTS);
+
+        // get the client information
+        route_client* clients = static_cast<route_client *>(shm_clients_region.get_address());
+        clientInfo = clients[ref];
+
+        buffers = static_cast<route_buffer *>(shm_buffers_region.get_address());
 
         // load the info from shared memory
-        info = static_cast<route_info *>(shm_info_region.get_address());
+        info = static_cast<route_server_info *>(shm_info_region.get_address());
 
         LOG_CTX(RouteClient::open, "connected to [{2}/v{3}]; running at {0}smp/{1}hz", info->bufferSize, info->sampleRate, info->name, info->version);
 
@@ -88,6 +108,43 @@ namespace Route {
     int RouteClient::getBufferSize() const {
         return info->bufferSize;
     }
+
+    int RouteClient::getChannelCount() const {
+        return info->channelCount;
+    }
+
+    route_buffer* RouteClient::getBuffer(bool input, int index) {
+        if (index >= MAX_CHANNELS) {
+            CRT_CTX(RouteClient::getBuffer, "channel index {0} out of range {1}!", index, MAX_CHANNELS);
+        }
+
+        int buf = -1;
+        if (input) {
+            buf = clientInfo.inputBufferMap[index];
+        } else {
+            buf = clientInfo.outputBufferMap[index];
+        }
+
+        if (buf < 0) {
+            CRT_CTX(RouteClient::getBuffer, "no buffer available for [REF {0}] {2} channel {1}", ref, index, input ? "input" : "output");
+            return nullptr;
+        }
+
+        return &(buffers[buf]);
+    }
+
+    route_channel_info RouteClient::getChannelInfo(bool input, int index) {
+        if (index >= MAX_CHANNELS) {
+            CRT_CTX(RouteClient::getChannelInfo, "channel index {0} out of range {1}!", index, MAX_CHANNELS);
+        }
+
+        if (input) {
+            return clientInfo.inputChannels[index];
+        } else {
+            return clientInfo.outputChannels[index];
+        }
+    }
+
 
 
 }

@@ -23,8 +23,17 @@ namespace Route {
         std::string clientName = "NO_NAME";
         int ref = -1;
         shared_memory_object shm_info;
+        shared_memory_object shm_buffers;
+        shared_memory_object shm_clients;
         mapped_region shm_info_region;
-        route_info* info;
+        mapped_region shm_buffers_region;
+        mapped_region shm_clients_region;
+        route_client clientInfo;
+        route_server_info* info;
+
+        // buffers
+        route_buffer* buffers = nullptr;
+
 
     public:
         RouteClient(const std::string client_name);
@@ -35,10 +44,22 @@ namespace Route {
 
         STATUS openConfig();
 
+        route_channel_info getChannelInfo(bool input, int index);
+
         int getRef() const;
 
         int getSampleRate() const;
         int getBufferSize() const;
+        int getChannelCount() const;
+
+        route_buffer* getBuffer(bool input, int index);
+
+        STATUS copyFromBuffer(int index, float* dest, int blockSize, boolean second);
+        STATUS copyToBuffer(int index, float* source, int blockSize, boolean second);
+
+//        STATUS readInput(int index, float* dest);
+//
+//        STATUS writeOutput(int index, float* src);
 
     };
 

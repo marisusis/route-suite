@@ -18,7 +18,7 @@
 // a sine wave, and the right one with a sawtooth
 
 enum {
-    kBlockFrames = 512,
+    kBlockFrames = 256,
     kNumInputs = 16,
     kNumOutputs = 16
 };
@@ -42,6 +42,9 @@ namespace Route {
 
 
     class RouteASIO : public IASIO, public CUnknown {
+
+    friend class ASIODebugger;
+
     public:
         RouteASIO(LPUNKNOWN pUnk, HRESULT* phr);
 
@@ -114,8 +117,10 @@ namespace Route {
 
         long getMilliSeconds() { return milliSeconds; }
 
+
     private:
         RouteClient* routeClient;
+
 
         friend void myTimer();
 
@@ -142,11 +147,9 @@ namespace Route {
         ASIOTime asioTime;
         ASIOTimeStamp theSystemTime;
         ASIODebugger* dbg;
-        float* inputBuffers[kNumInputs * 2];
-        float* outputBuffers[kNumOutputs * 2];
+        float** inputBuffers;
+        float** outputBuffers;
 
-        long inMap[kNumInputs];
-        long outMap[kNumOutputs];
         long inputLatency;
         long outputLatency;
         long activeInputs;
@@ -156,8 +159,6 @@ namespace Route {
         bool active, started;
         bool timeInfoMode, tcRead;
         char errorMessage[128];
-
-        void makeSine2(short* wave, float f2);
     };
 
     class ASIODebugger : public Runnable {

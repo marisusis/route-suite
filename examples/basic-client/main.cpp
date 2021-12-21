@@ -13,8 +13,7 @@ int main() {
 
     client.open();
 
-
-    std::chrono::seconds sleepTime = std::chrono::seconds(10);
+    std::chrono::seconds sleepTime = std::chrono::seconds(1);
     spdlog::info("sleeping for {} seconds...", sleepTime.count());
     std::this_thread::sleep_for(sleepTime);
 
