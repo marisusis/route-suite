@@ -27,6 +27,8 @@ namespace Route {
         shared_memory_object shm_info;
         mapped_region shm_info_region;
 
+        shared_memory_object shm_buffers;
+        mapped_region shm_buffers_region;
 
     public:
         RouteServer();

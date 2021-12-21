@@ -5,14 +5,38 @@
 #ifndef ROUTE_SUITE_SHAREDSTRUCTURES_H
 #define ROUTE_SUITE_SHAREDSTRUCTURES_H
 
+#include "constants.h"
+
 namespace Route {
 
-    struct route_info {
+    struct route_server_info {
         char name[256];
         char version[16];
         int sampleRate;
         int bufferSize;
+        int channelCount;
     };
+
+    struct route_buffer {
+        // allow for a double buffer
+        float buffer1[MAX_BUFFER_SIZE];
+        float buffer2[MAX_BUFFER_SIZE];
+    };
+
+    struct route_channel_info {
+        bool active;
+        char name[256];
+    };
+
+    struct route_client {
+        char name[256];
+        route_channel_info inputChannels[MAX_CHANNELS];
+        route_channel_info outputChannels[MAX_CHANNELS];
+    };
+
+
+
+
 
 }
 

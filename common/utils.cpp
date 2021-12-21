@@ -20,6 +20,8 @@ std::string statusToString(STATUS s) {
             return "STATUS_NO_TRANSACTION";
         case STATUS_NO_REF:
             return "STATUS_NO_REF";
+        case STATUS_NO_BUFFER:
+            return "STATUS_NO_BUFFER";
         default:
             CRT_CTX(statusToString, "bad status!");
             return "BAD_STATUS";

@@ -132,13 +132,14 @@ namespace Route {
         tcRead = false;
         for (int i = 0; i < kNumInputs; i++) {
             inputBuffers[i] = nullptr;
-            inMap[i] = 0;
+            inMap[i] = 3;
         }
 
         for (int i = 0; i < kNumOutputs; i++) {
             outputBuffers[i] = nullptr;
-            outMap[i] = 0;
+            outMap[i] = 4;
         }
+
         callbacks = nullptr;
         activeInputs = activeOutputs = 0;
         toggle = 0;
@@ -257,8 +258,8 @@ namespace Route {
 
 
     ASIOError RouteASIO::getChannels(long* numInputChannels, long* numOutputChannels) {
-        *numInputChannels = kNumInputs;
-        *numOutputChannels = kNumOutputs;
+        *numInputChannels = routeClient->getChannelCount();
+        *numOutputChannels = routeClient->getChannelCount();
         return ASE_OK;
     }
 
@@ -350,31 +351,19 @@ namespace Route {
     ASIOError RouteASIO::getChannelInfo(ASIOChannelInfo* info) {
 //        DBG_CTX(RouteASIO::getChannelInfo, "{} channel #{} named {}", info->isInput ? "input" : "output", info->channel,
 //                info->name);
-        if (info->channel < 0 || (info->isInput ? info->channel >= kNumInputs : info->channel >= kNumOutputs))
+        if (info->channel < 0 || info->channel >= routeClient->getChannelCount())
             return ASE_InvalidParameter;
 
-        info->type = ASIOSTInt16LSB;
+        info->type = ASIOSTFloat32LSB;
         info->channelGroup = 0;
         info->isActive = ASIOFalse;
-        long i;
-        if (info->isInput) {
-            for (i = 0; i < activeInputs; i++) {
-                if (inMap[i] == info->channel) {
-                    info->isActive = ASIOTrue;
-                    break;
-                }
-            }
-        } else {
-            for (i = 0; i < activeOutputs; i++) {
-                if (outMap[i] == info->channel) {
-                    info->isActive = ASIOTrue;
-                    break;
-                }
-            }
-        }
 
-        strcpy_s(info->name, sizeof(char) * 32,
-                 format_string("[%d] Route %s %d", routeClient->getRef(), info->isInput ? "Source" : "Sink", info->channel + 1).c_str());
+        // get info
+        route_channel_info ch = routeClient->getChannelInfo(info->isInput, info->channel);
+
+        // set values from config
+        strcpy(info->name, ch.name);
+        info->isActive = ch.active ? ASIOTrue : ASIOFalse;
 
         return ASE_OK;
     }
@@ -395,7 +384,7 @@ namespace Route {
             if (info->isInput) {
                 if (info->channelNum < 0 || info->channelNum >= kNumInputs)
                     goto error;
-                inMap[activeInputs] = info->channelNum;
+//                inMap[activeInputs] = info->channelNum;
                 inputBuffers[activeInputs] = new float[blockFrames * 2];    // double buffer
                 if (inputBuffers[activeInputs]) {
                     info->buffers[0] = inputBuffers[activeInputs];
@@ -414,7 +403,7 @@ namespace Route {
             {
                 if (info->channelNum < 0 || info->channelNum >= kNumOutputs)
                     goto error;
-                outMap[activeOutputs] = info->channelNum;
+//                outMap[activeOutputs] = info->channelNum;
                 outputBuffers[activeOutputs] = new float[blockFrames * 2];    // double buffer
                 if (outputBuffers[activeOutputs]) {
                     info->buffers[0] = outputBuffers[activeOutputs];
@@ -534,6 +523,9 @@ namespace Route {
 
     void RouteASIO::processInput() {
         // iterate through all input buffers
+        routeClient->copyFromBuffer(1, inputBuffers[0], blockFrames, false);
+        routeClient->copyFromBuffer(1, inputBuffers[0] + blockFrames, blockFrames, true);
+
         float* in = 0;
         float* out = 0;
         for (long i = 0; i < activeInputs; i++) {
@@ -546,7 +538,7 @@ namespace Route {
                     out -= blockFrames;
                 }
 
-                memcpy(in, out, (unsigned long) (blockFrames*2));
+//                memcpy(in, out, (unsigned long) (blockFrames*2));
             }
         }
     }
@@ -566,12 +558,15 @@ namespace Route {
 
 
     void RouteASIO::processOutput() {
+
+        // send the outputs
+        routeClient->copyToBuffer(0, outputBuffers[0], blockFrames, false);
+
     }
 
 
     void RouteASIO::bufferSwitch() {
         if (started && callbacks) {
-
             // trigger debugger buffer switch tick
             dbg->bufferTick();
 

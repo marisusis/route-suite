@@ -4,7 +4,7 @@
 
 namespace Route {
 
-    ClientManager::ClientManager(RouteServer* server) : server(server) {
+    ClientManager::ClientManager(RouteServer *server) : server(server) {
         DBG_CTX(ClientManager::new, "");
 
         // set all active refs to disabled
@@ -20,6 +20,18 @@ namespace Route {
     STATUS ClientManager::open() {
         DBG_CTX(ClientManager::open, "opening ClientManager...");
 
+        // created shared memory
+        shm_clients = shared_memory_object(open_or_create, ROUTE_SHM_CLIENTS, read_write);
+        shm_clients.truncate(sizeof(route_client) * MAX_CLIENTS);
+
+        // map the memory
+        shm_clients_region = mapped_region(shm_clients,
+                                           read_write,
+                                           0,
+                                           sizeof(route_client) * MAX_CLIENTS);
+
+        shmClients = static_cast<route_client *>(shm_clients_region.get_address());
+
         return STATUS_OK;
     }
 
@@ -27,7 +39,7 @@ namespace Route {
         DBG_CTX(ClientManager::close, "closing ClientManager...");
 
         // iterate through all
-        std::map<int, Client*>::iterator it = clients.begin();
+        std::map<int, Client *>::iterator it = clients.begin();
 
         while (it != clients.end()) {
 
@@ -43,7 +55,7 @@ namespace Route {
         return STATUS_OK;
     }
 
-    STATUS ClientManager::addClient(std::string clientName, const int &pid, int* ref) {
+    STATUS ClientManager::addClient(std::string clientName, const int &pid, int *ref) {
         DBG_CTX(ClientManager::addClient, "adding client [{}/{}]...", clientName, pid);
 
         // get a ref
@@ -56,10 +68,35 @@ namespace Route {
         DBG_CTX(ClientManager::addClient, "assigned ref [{}] to client [{}/{}]...", *ref, clientName, pid);
 
         // create the client
-        Client* client = new Client(clientName, *ref);
+        Client *client = new Client(clientName, *ref);
 
         // add to the list
         clients.insert(std::make_pair(*ref, client));
+
+        // add the client to the shared memory
+        route_client *routeClient = &(shmClients[*ref]);
+
+        // copy name
+        strcpy(routeClient->name, clientName.c_str());
+
+        // create info
+        route_channel_info *inInfo = new route_channel_info();
+        route_channel_info *outInfo = new route_channel_info();
+
+        // set active
+        inInfo->active = true;
+        outInfo->active = true;
+
+        for (int i = 0; i < MAX_CHANNELS; i++) {
+
+            // set default values
+            strcpy(inInfo->name, format_string("[REF %d] In %d", *ref, i).c_str());
+            strcpy(outInfo->name, format_string("[REF %d] Out %d", *ref, i).c_str());
+
+            // copy the info to shm
+            memcpy(&(routeClient->inputChannels[i]), inInfo, sizeof(route_channel_info));
+            memcpy(&(routeClient->outputChannels[i]), outInfo, sizeof(route_channel_info));
+        }
 
         // open the client
         client->open();
@@ -71,7 +108,7 @@ namespace Route {
         DBG_CTX(ClientManager::closeClient, "closing client [{}]...", ref);
 
         // check if ref exists
-        std::map<int, Client*>::iterator find = clients.find(ref);
+        std::map<int, Client *>::iterator find = clients.find(ref);
 
         if (find == clients.end()) {
             // no client found
@@ -80,7 +117,7 @@ namespace Route {
         }
 
         // we got a client
-        Client* client = find->second;
+        Client *client = find->second;
 
         // close the client
         client->close();
@@ -110,7 +147,7 @@ namespace Route {
 
     }
 
-    STATUS ClientManager::allocateRef(int& ref) {
+    STATUS ClientManager::allocateRef(int &ref) {
         // start at 0
         ref = 0;
 

@@ -18,7 +18,7 @@
 // a sine wave, and the right one with a sawtooth
 
 enum {
-    kBlockFrames = 512,
+    kBlockFrames = 256,
     kNumInputs = 16,
     kNumOutputs = 16
 };

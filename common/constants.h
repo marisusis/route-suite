@@ -20,9 +20,17 @@
 #define PIPE_CLIENT_TAG "client"
 
 // shared memory
-#define ROUTE_SHM_INFO GLOBAL_NAMESPACE_PREFIX "_" "inf"
+#define ROUTE_SHM_INFO GLOBAL_NAMESPACE_PREFIX "_shm_" "inf"
+#define ROUTE_SHM_BUFFERS GLOBAL_NAMESPACE_PREFIX "_shm_" "buffers"
+#define ROUTE_SHM_CLIENTS GLOBAL_NAMESPACE_PREFIX "_shm_" "clients"
 
+// values
 #define MAX_CLIENTS 256
+#define MAX_BUFFERS 512
+#define MAX_BUFFER_SIZE 1024
+#define MAX_CHANNELS 8
+#define MAX_IN_PER_CLIENT 8
+#define MAX_OUT_PER_CLIENT 8
 
 // Status codes
 //#define STATUS_OK ((STATUS) 0x1)
