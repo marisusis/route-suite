@@ -113,35 +113,24 @@ namespace Route {
         return info->channelCount;
     }
 
-    STATUS RouteClient::copyFromBuffer(int index, float* dest, int blockSize, boolean second) {
-
-        if (index >= MAX_BUFFERS) {
-            return STATUS_NO_BUFFER;
+    route_buffer* RouteClient::getBuffer(bool input, int index) {
+        if (index >= MAX_CHANNELS) {
+            CRT_CTX(RouteClient::getBuffer, "channel index {0} out of range {1}!", index, MAX_CHANNELS);
         }
 
-        // select first or second half of double buffer
-        float* bufferSelection = (second) ? buffers[index].buffer2 : buffers[index].buffer1;
-
-        // copy values from buffer
-        memcpy(dest, bufferSelection, sizeof(float) * blockSize);
-
-        return STATUS_OK;
-    }
-
-
-    STATUS RouteClient::copyToBuffer(int index, float *dest, int blockSize, boolean second) {
-
-        if (index >= MAX_BUFFERS) {
-            return STATUS_NO_BUFFER;
+        int buf = -1;
+        if (input) {
+            buf = clientInfo.inputBufferMap[index];
+        } else {
+            buf = clientInfo.outputBufferMap[index];
         }
 
-        // select first or second half of double buffer
-        float* bufferSelection = (second) ? buffers[index].buffer2 : buffers[index].buffer1;
+        if (buf < 0) {
+            CRT_CTX(RouteClient::getBuffer, "no buffer available for [REF {0}] {2} channel {1}", ref, index, input ? "input" : "output");
+            return nullptr;
+        }
 
-        // copy values from buffer
-        memcpy(bufferSelection, dest, sizeof(float) * blockSize);
-
-        return STATUS_OK;
+        return &(buffers[buf]);
     }
 
     route_channel_info RouteClient::getChannelInfo(bool input, int index) {
@@ -155,6 +144,7 @@ namespace Route {
             return clientInfo.outputChannels[index];
         }
     }
+
 
 
 }

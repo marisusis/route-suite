@@ -30,6 +30,12 @@ namespace Route {
 
     struct route_client {
         char name[256];
+
+        bool usesAudio;
+
+        int inputBufferMap[MAX_CHANNELS];
+        int outputBufferMap[MAX_CHANNELS];
+
         route_channel_info inputChannels[MAX_CHANNELS];
         route_channel_info outputChannels[MAX_CHANNELS];
     };

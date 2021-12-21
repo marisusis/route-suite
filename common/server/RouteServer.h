@@ -1,11 +1,12 @@
 #ifndef ROUTE_SUITE_ROUTESERVER_H
 #define ROUTE_SUITE_ROUTESERVER_H
 
-#include <pipes/ServerChannel.h>
+#include "pipes/ServerChannel.h"
 #include "server/client/ClientManager.h"
 #include "types.h"
 #include "boost/interprocess/shared_memory_object.hpp"
 #include "boost/interprocess/mapped_region.hpp"
+#include "BufferManager.h"
 
 using boost::interprocess::shared_memory_object;
 using boost::interprocess::mapped_region;
@@ -23,12 +24,10 @@ namespace Route {
     private:
         ServerChannel requestChannel;
         ClientManager clientManager;
+        BufferManager bufferManager;
         int currentReferenceNumber = 1;
         shared_memory_object shm_info;
         mapped_region shm_info_region;
-
-        shared_memory_object shm_buffers;
-        mapped_region shm_buffers_region;
 
     public:
         RouteServer();
@@ -41,10 +40,9 @@ namespace Route {
         STATUS stop();
 
         ClientManager* getClientManager();
+        BufferManager* getBufferManager();
 
         STATUS tempAction(const std::string& action);
-
-        int getNewReferenceNumber();
 
     };
 

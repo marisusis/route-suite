@@ -34,6 +34,7 @@ namespace Route {
         // buffers
         route_buffer* buffers = nullptr;
 
+
     public:
         RouteClient(const std::string client_name);
         ~RouteClient();
@@ -51,8 +52,14 @@ namespace Route {
         int getBufferSize() const;
         int getChannelCount() const;
 
+        route_buffer* getBuffer(bool input, int index);
+
         STATUS copyFromBuffer(int index, float* dest, int blockSize, boolean second);
         STATUS copyToBuffer(int index, float* source, int blockSize, boolean second);
+
+//        STATUS readInput(int index, float* dest);
+//
+//        STATUS writeOutput(int index, float* src);
 
     };
 

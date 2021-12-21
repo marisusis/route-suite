@@ -5,23 +5,20 @@
 
 namespace Route {
 
-    RouteServer::RouteServer() : clientManager(this) {
+    RouteServer::RouteServer() : clientManager(this), bufferManager(this) {
         LOG_CTX(RouteServer::new, "");
 
         // remove shared memory objects in case they exist
         shared_memory_object::remove(ROUTE_SHM_INFO);
-        shared_memory_object::remove(ROUTE_SHM_BUFFERS);
         shared_memory_object::remove(ROUTE_SHM_CLIENTS);
 
         // created shared memory object
         DBG_CTX(RouteServer::new, "creating shared memory...");
         shm_info = shared_memory_object(open_or_create, ROUTE_SHM_INFO, read_write);
-        shm_buffers = shared_memory_object(open_or_create, ROUTE_SHM_BUFFERS, read_write);
 
         // truncate to the size of datatypes
         DBG_CTX(RouteServer::new, "truncating shared memory to {0} bytes...", sizeof(route_server_info));
         shm_info.truncate(sizeof(route_server_info));
-        shm_buffers.truncate(sizeof(route_buffer) * MAX_BUFFERS);
 
         // create the mapped regions
         DBG_CTX(RouteServer::new, "creating mapped regions");
@@ -29,12 +26,6 @@ namespace Route {
                                         read_write,
                                         0,
                                         sizeof(route_server_info));
-
-        // create shared memory for the buffers
-        shm_buffers_region = mapped_region(shm_buffers,
-                                           read_write,
-                                           0,
-                                           sizeof(route_buffer) * MAX_BUFFERS);
 
         // create the info
         route_server_info* info = static_cast<route_server_info *>(shm_info_region.get_address());
@@ -54,12 +45,6 @@ namespace Route {
         DBG_CTX(RouteServer::~, "destroying shared memory [{0}]", ROUTE_SHM_INFO);
         shared_memory_object::remove(ROUTE_SHM_INFO);
 
-        DBG_CTX(RouteServer::~, "destroying shared memory [{0}]", ROUTE_SHM_BUFFERS);
-        shared_memory_object::remove(ROUTE_SHM_BUFFERS);
-
-        DBG_CTX(RouteServer::~, "destroying shared memory [{0}]", ROUTE_SHM_CLIENTS);
-        shared_memory_object::remove(ROUTE_SHM_CLIENTS);
-
     }
 
     STATUS RouteServer::open() {
@@ -77,10 +62,6 @@ namespace Route {
     STATUS RouteServer::tempAction(const std::string& action) {
         LOG_CTX(RouteServer::tempAction, "A wild Action has appeared! It's name is {}.", action);
         return STATUS_OK;
-    }
-
-    int RouteServer::getNewReferenceNumber() {
-        return currentReferenceNumber++;
     }
 
     STATUS RouteServer::close() {
@@ -114,6 +95,10 @@ namespace Route {
 
     ClientManager* RouteServer::getClientManager() {
         return &clientManager;
+    }
+
+    BufferManager *RouteServer::getBufferManager() {
+        return &bufferManager;
     }
 
 }

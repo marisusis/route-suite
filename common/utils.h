@@ -29,6 +29,8 @@ auto convert(T&& t)
     }
 }
 
+float calculateRMS(const float* values, int size);
+
 template<typename... Args>
 std::string format_string_internal(const std::string& format, Args&& ... args)
 {

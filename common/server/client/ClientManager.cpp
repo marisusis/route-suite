@@ -20,7 +20,10 @@ namespace Route {
     STATUS ClientManager::open() {
         DBG_CTX(ClientManager::open, "opening ClientManager...");
 
-        // created shared memory
+        // remove shared memory in case it exists
+        shared_memory_object::remove(ROUTE_SHM_CLIENTS);
+
+        // create shared memory
         shm_clients = shared_memory_object(open_or_create, ROUTE_SHM_CLIENTS, read_write);
         shm_clients.truncate(sizeof(route_client) * MAX_CLIENTS);
 
@@ -51,6 +54,9 @@ namespace Route {
             delete it->second;
 
         }
+
+        // remove shared memory
+        shared_memory_object::remove(ROUTE_SHM_CLIENTS);
 
         return STATUS_OK;
     }
@@ -89,9 +95,19 @@ namespace Route {
 
         for (int i = 0; i < MAX_CHANNELS; i++) {
 
+            int inBuf = -1;
+            int outBuf = -1;
+
+            server->getBufferManager()->allocateBuffer(inBuf);
+            server->getBufferManager()->allocateBuffer(outBuf);
+
+            // assign values
+            routeClient->inputBufferMap[i] = inBuf;
+            routeClient->outputBufferMap[i] = outBuf;
+
             // set default values
-            strcpy(inInfo->name, format_string("[REF %d] In %d", *ref, i).c_str());
-            strcpy(outInfo->name, format_string("[REF %d] Out %d", *ref, i).c_str());
+            strcpy(inInfo->name, format_string("[REF %d] Source %d @ %d", *ref, i + 1, routeClient->inputBufferMap[i]).c_str());
+            strcpy(outInfo->name, format_string("[REF %d] Sink %d @ %d", *ref, i + 1, routeClient->outputBufferMap[i]).c_str());
 
             // copy the info to shm
             memcpy(&(routeClient->inputChannels[i]), inInfo, sizeof(route_channel_info));
@@ -122,6 +138,14 @@ namespace Route {
         // close the client
         client->close();
 
+        route_client shmClient = shmClients[ref];
+
+        // free the buffers
+        for (int i = 0; i < MAX_CHANNELS; i++) {
+            server->getBufferManager()->freeBuffer(shmClient.inputBufferMap[i]);
+            server->getBufferManager()->freeBuffer(shmClient.outputBufferMap[i]);
+        }
+
         // free its refnum
         freeRef(ref);
 
@@ -144,7 +168,6 @@ namespace Route {
 
         // all OK
         return STATUS_OK;
-
     }
 
     STATUS ClientManager::allocateRef(int &ref) {

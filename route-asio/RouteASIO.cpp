@@ -130,22 +130,13 @@ namespace Route {
         started = false;
         timeInfoMode = false;
         tcRead = false;
-        for (int i = 0; i < kNumInputs; i++) {
-            inputBuffers[i] = nullptr;
-            inMap[i] = 3;
-        }
-
-        for (int i = 0; i < kNumOutputs; i++) {
-            outputBuffers[i] = nullptr;
-            outMap[i] = 4;
-        }
 
         callbacks = nullptr;
         activeInputs = activeOutputs = 0;
         toggle = 0;
 
         // create debugger
-        dbg = new ASIODebugger(this, 1000);
+        dbg = new ASIODebugger(this, 3000);
 
     }
 
@@ -205,6 +196,18 @@ namespace Route {
         inputLatency = blockFrames;        // typically
         outputLatency = blockFrames * 2;
 
+        // allocate memory for buffers
+        inputBuffers = new float*[routeClient->getChannelCount()]; //static_cast<float *>(malloc(sizeof(float) * MAX_BUFFER_SIZE * 2));
+        outputBuffers = new float*[routeClient->getChannelCount()]; //static_cast<float *>(malloc(sizeof(float) * MAX_BUFFER_SIZE * 2));
+
+        // create empty buffers
+        for (int i = 0; i < routeClient->getChannelCount(); i++) {
+            inputBuffers[i] = new float[routeClient->getBufferSize() * 2];
+            outputBuffers[i] = new float[routeClient->getBufferSize() * 2];
+
+            memset(inputBuffers[i], 0, routeClient->getBufferSize() * 2 * sizeof(float));
+            memset(outputBuffers[i], 0, routeClient->getBufferSize() * 2 * sizeof(float));
+        }
 
         sysRef = sysRef;
         if (active)
@@ -380,49 +383,20 @@ namespace Route {
         activeInputs = 0;
         activeOutputs = 0;
         blockFrames = routeClient->getBufferSize(); // NEW: get buffer size from client; bufferSize;
-        for (i = 0; i < numChannels; i++, info++) {
-            if (info->isInput) {
-                if (info->channelNum < 0 || info->channelNum >= kNumInputs)
-                    goto error;
-//                inMap[activeInputs] = info->channelNum;
-                inputBuffers[activeInputs] = new float[blockFrames * 2];    // double buffer
-                if (inputBuffers[activeInputs]) {
-                    info->buffers[0] = inputBuffers[activeInputs];
-                    info->buffers[1] = inputBuffers[activeInputs] + blockFrames;
-                } else {
-                    info->buffers[0] = info->buffers[1] = 0;
-                    notEnoughMem = true;
-                }
-                activeInputs++;
-                if (activeInputs > kNumInputs) {
-                    error:
-                    disposeBuffers();
-                    return ASE_InvalidParameter;
-                }
-            } else    // output
-            {
-                if (info->channelNum < 0 || info->channelNum >= kNumOutputs)
-                    goto error;
-//                outMap[activeOutputs] = info->channelNum;
-                outputBuffers[activeOutputs] = new float[blockFrames * 2];    // double buffer
-                if (outputBuffers[activeOutputs]) {
-                    info->buffers[0] = outputBuffers[activeOutputs];
-                    info->buffers[1] = outputBuffers[activeOutputs] + blockFrames;
-                } else {
-                    info->buffers[0] = info->buffers[1] = 0;
-                    notEnoughMem = true;
-                }
-                activeOutputs++;
-                if (activeOutputs > kNumOutputs) {
-                    activeOutputs--;
-                    disposeBuffers();
-                    return ASE_InvalidParameter;
-                }
+
+        for (i = 0; i < routeClient->getChannelCount() * 2; i++, info++) {
+            if (info->channelNum < 0 || info->channelNum >= routeClient->getChannelCount()) {
+                CRT_CTX(RouteASIO::createBuffers, "channel index {0} out of range", info->channelNum);
             }
-        }
-        if (notEnoughMem) {
-            disposeBuffers();
-            return ASE_NoMemory;
+
+            // map buffers to correct pointers
+            if (info->isInput) {
+                info->buffers[0] = inputBuffers[info->channelNum];
+                info->buffers[1] = inputBuffers[info->channelNum] + blockFrames;
+            } else {
+                info->buffers[0] = outputBuffers[info->channelNum];
+                info->buffers[1] = outputBuffers[info->channelNum] + blockFrames;
+            }
         }
 
         this->callbacks = callbacks;
@@ -445,16 +419,22 @@ namespace Route {
 
     ASIOError RouteASIO::disposeBuffers() {
         DBG_CTX(RouteASIO::disposeBuffers, "");
-        long i;
 
         callbacks = 0;
         stop();
-        for (i = 0; i < activeInputs; i++)
-            delete inputBuffers[i];
-        activeInputs = 0;
-        for (i = 0; i < activeOutputs; i++)
-            delete outputBuffers[i];
-        activeOutputs = 0;
+
+//        for (int i = 0; i < MAX_CHANNELS; i++) {
+//            delete inputBuffers[i];
+//            delete outputBuffers[i];
+//        }
+
+//        for (i = 0; i < activeInputs; i++)
+//            delete inputBuffers[i];
+//        activeInputs = 0;
+//
+//        for (i = 0; i < activeOutputs; i++)
+//            delete outputBuffers[i];
+//        activeOutputs = 0;
         return ASE_OK;
     }
 
@@ -501,15 +481,6 @@ namespace Route {
         return ASE_NotPresent;
     }
 
-
-// private methods
-
-
-
-// input
-
-
-
     bool RouteASIO::inputOpen() {
 
         return true;
@@ -522,23 +493,18 @@ namespace Route {
 
 
     void RouteASIO::processInput() {
-        // iterate through all input buffers
-        routeClient->copyFromBuffer(1, inputBuffers[0], blockFrames, false);
-        routeClient->copyFromBuffer(1, inputBuffers[0] + blockFrames, blockFrames, true);
+        for (int i = 0; i < routeClient->getChannelCount(); i++) {
 
-        float* in = 0;
-        float* out = 0;
-        for (long i = 0; i < activeInputs; i++) {
-            // pointer to beginning of buffer number i
-            in = inputBuffers[i];
-            out = outputBuffers[i] + blockFrames;
-            if (in) {
-                if (toggle) {// read first or second half of double-buffer
-                    in += blockFrames;
-                    out -= blockFrames;
-                }
+            // get the buffer
+            route_buffer* buf = routeClient->getBuffer(true, i);
 
-//                memcpy(in, out, (unsigned long) (blockFrames*2));
+            if (buf == nullptr) continue;
+
+            // copy values over
+            if (toggle) {
+                memcpy(inputBuffers[i] + blockFrames, buf->buffer2, blockFrames * sizeof(float));
+            } else {
+                memcpy(inputBuffers[i], buf->buffer1, blockFrames * sizeof(float));
             }
         }
     }
@@ -558,9 +524,20 @@ namespace Route {
 
 
     void RouteASIO::processOutput() {
+        for (int i = 0; i < routeClient->getChannelCount(); i++) {
 
-        // send the outputs
-        routeClient->copyToBuffer(0, outputBuffers[0], blockFrames, false);
+            // get the buffer
+            route_buffer* buf = routeClient->getBuffer(false, i);
+
+            if (buf == nullptr) continue;
+
+            // copy values over
+            if (toggle) {
+                memcpy(buf->buffer2, outputBuffers[i] + blockFrames, blockFrames * sizeof(float));
+            } else {
+                memcpy(buf->buffer1, outputBuffers[i], blockFrames * sizeof(float));
+            }
+        }
 
     }
 

@@ -1,4 +1,15 @@
 #include "utils.h"
+#include "math.h"
+
+float calculateRMS(const float* values, int size) {
+    float sum = 0;
+
+    for (int i = 0; i < size; i++) {
+        sum += pow(values[i], 2.);
+    }
+
+    return sqrt(sum / ((double) size));
+}
 
 std::string statusToString(STATUS s) {
     switch (s) {
