@@ -34,7 +34,7 @@ namespace Route {
 
         // default sample rate and buffer size
         info->sampleRate = 44100;
-        info->bufferSize = 128;
+        info->bufferSize = 1024;
         info->channelCount = MAX_CHANNELS;
     }
 
@@ -53,8 +53,12 @@ namespace Route {
         // open the request channel
         requestChannel.open(this, SERVER_NAME);
 
+        // open buffer manager
+        bufferManager.open();
+
         // open client manager
         clientManager.open();
+
 
         return STATUS_OK;
     }
@@ -69,6 +73,9 @@ namespace Route {
 
         // close client manager
         clientManager.close();
+
+        // close buffer manager
+        bufferManager.close();
 
         // close the request channel
         requestChannel.close();

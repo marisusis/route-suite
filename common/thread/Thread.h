@@ -52,6 +52,7 @@ namespace Route {
         HANDLE eventHandle;
         static DWORD WINAPI ThreadHandler(void* arg);
         const char* threadName;
+        bool realtime = false;
 
     protected:
         Runnable* runnable;
@@ -59,12 +60,15 @@ namespace Route {
 
     public:
 
+        Thread(Runnable* runnable, const char* thread_name, bool realtime);
         explicit Thread(Runnable* runnable, const char* thread_name);
         ~Thread();
 
         STATUS start();
         STATUS startSync();
         STATUS startInternal(HANDLE* thread_handle, int priority, int realtime, ThreadCallback start_routine, void* arg);
+
+        STATUS setRealtime(bool realtime);
 
         STATUS kill();
         STATUS stop();

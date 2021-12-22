@@ -21,6 +21,7 @@ namespace Route {
         RouteASIO* driver;
         std::chrono::high_resolution_clock::time_point lastTime;
         std::chrono::microseconds dur;
+        std::chrono::duration<double> waitTime;
 
     public:
         ASIOClock(RouteASIO *driver);
@@ -32,6 +33,8 @@ namespace Route {
         STATUS init() override;
 
         STATUS execute() override;
+
+        void latchTime(ASIOTimeStamp* timestamp);
     };
 
 }

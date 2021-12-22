@@ -212,7 +212,7 @@ namespace Route {
         DBG_CTX(RouteASIO::start, "");
 
         // start debugger
-//        dbg->start();
+        dbg->start();
 
         if (callbacks) {
             started = false;
@@ -223,7 +223,7 @@ namespace Route {
             // start clock
             clock->start();
 
-            timerOn();            // activate 'hardware'
+//            timerOn();            // activate 'hardware'
             started = true;
 
             return ASE_OK;
@@ -236,14 +236,14 @@ namespace Route {
         DBG_CTX(RouteASIO::stop, "");
 
         // stop debugger
-//        dbg->stop();
+        dbg->stop();
 
         started = false;
 
         // stop clock
         clock->stop();
 
-        timerOff();        // de-activate 'hardware'
+//        timerOff();        // de-activate 'hardware'
         return ASE_OK;
     }
 
@@ -522,14 +522,24 @@ namespace Route {
             // trigger debugger buffer switch tick
             dbg->bufferTick();
 
-            getNanoSeconds(&theSystemTime);            // latch system time
+            // latch to system time
+            clock->latchTime(&theSystemTime);
+
+//            getNanoSeconds(&theSystemTime);            // latch system time
+
+            // process I/O
             processInput();
             processOutput();
+
+            // update the sample position
             samplePosition += blockFrames;
+
             if (timeInfoMode)
                 bufferSwitchX();
             else
                 callbacks->bufferSwitch(toggle, ASIOFalse);
+
+            // flip flop the toggle
             toggle = toggle ? 0 : 1;
         }
     }

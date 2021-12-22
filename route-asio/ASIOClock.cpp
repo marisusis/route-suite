@@ -5,12 +5,15 @@
 #include "ASIOClock.h"
 #include "RouteASIO.h"
 #include <chrono>
+#include <ratio>
 #include <math.h>
 #include <thread>
 
+const double twoRaisedTo32 = 4294967296.;
+
 using namespace std::chrono_literals;
 
-Route::ASIOClock::ASIOClock(RouteASIO *driver) : thread(this, "ASIOClock"), driver(driver) {
+Route::ASIOClock::ASIOClock(RouteASIO *driver) : thread(this, "ASIOClock", true), driver(driver) {
     DBG_CTX(ASIOClock::new, "");
 
 }
@@ -24,24 +27,36 @@ STATUS Route::ASIOClock::init() {
     const double sampleRate = driver->routeClient->getSampleRate();
     const double bufferSize = driver->routeClient->getBufferSize();
 
-    const int factor = (bufferSize * 1e6/sampleRate);
+    waitTime = std::chrono::duration<double>(bufferSize/sampleRate);
 
-    // calculate wait time
-    dur = 1us * factor;
-
-    LOG_CTX(ASIOClock::init, "sleep time {0}us", dur.count());
+    LOG_CTX(ASIOClock::init, "sleep time {0}s", waitTime.count());
 
     return Runnable::init();
 }
 
 STATUS Route::ASIOClock::execute() {
 
+//    auto until = lastTime + waitTime;
+
+//    if (waitTime < (std::chrono::high_resolution_clock::now() - lastTime)) {
+//        return STATUS_OK;
+//    }
+
     // wait until enough time has passed
-    std::this_thread::sleep_until(lastTime + dur);
+//    std::this_thread::sleep_until(lastTime + waitTime);
+    while (thread.getState() == RUNNING) {
 
-    driver->bufferSwitch();
+        if ((std::chrono::high_resolution_clock::now() - lastTime) < waitTime) {
+            continue;
+        }
 
-    lastTime = std::chrono::high_resolution_clock::now();
+        // update last time
+        lastTime = std::chrono::high_resolution_clock::now();
+
+
+        driver->bufferSwitch();
+
+    }
 
     return STATUS_OK;
 }
@@ -65,4 +80,16 @@ STATUS Route::ASIOClock::start() {
     thread.start();
 
     return STATUS_OK;
+}
+
+void Route::ASIOClock::latchTime(ASIOTimeStamp* timestamp) {
+
+    // get current time in nanoseconds
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    double nanoTime = std::chrono::duration<double, std::ratio<1, 1000000000>>(currentTime.time_since_epoch()).count();
+
+    // update the timestamp
+    timestamp->hi = (unsigned long)(nanoTime / twoRaisedTo32);
+    timestamp->lo = (unsigned long)(nanoTime - (timestamp->hi * twoRaisedTo32));
+
 }
