@@ -10,8 +10,8 @@
 namespace Route {
 
     struct route_server_info {
-        char name[256];
-        char version[16];
+        char name[SERVER_NAME_LENGTH];
+        char version[VERSION_NAME_LENGTH];
         int sampleRate;
         int bufferSize;
         int channelCount;

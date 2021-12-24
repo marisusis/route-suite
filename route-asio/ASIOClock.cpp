@@ -44,10 +44,12 @@ STATUS Route::ASIOClock::execute() {
 
     // wait until enough time has passed
 //    std::this_thread::sleep_until(lastTime + waitTime);
-    while (thread.getState() == RUNNING) {
+
+        if (thread.getState() != RUNNING) return STATUS_BREAK;
+//    while (thread.getState() == RUNNING) {
 
         if ((std::chrono::high_resolution_clock::now() - lastTime) < waitTime) {
-            continue;
+            return STATUS_OK;
         }
 
         // update last time
@@ -56,7 +58,7 @@ STATUS Route::ASIOClock::execute() {
 
         driver->bufferSwitch();
 
-    }
+//    }
 
     return STATUS_OK;
 }

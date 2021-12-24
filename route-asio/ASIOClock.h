@@ -34,7 +34,7 @@ namespace Route {
 
         STATUS execute() override;
 
-        void latchTime(ASIOTimeStamp* timestamp);
+        static void latchTime(ASIOTimeStamp* timestamp);
     };
 
 }

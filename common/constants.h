@@ -8,9 +8,11 @@
 #define GLOBAL_NAMESPACE_PREFIX "route"
 
 // names
-#define SERVER_NAME_LENGTH 256
+#define SERVER_NAME_LENGTH 64
 #define CLIENT_NAME_SIZE 128
+#define VERSION_NAME_LENGTH 16
 #define SERVER_NAME "RouteD"
+#define SERVER_VERSION "0.0.2"
 
 // Named pipes
 #define PIPE_NAME_SIZE 256

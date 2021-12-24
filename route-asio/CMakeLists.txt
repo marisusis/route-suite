@@ -13,9 +13,10 @@ add_library(RouteASIO SHARED
 target_compile_definitions(RouteASIO PRIVATE _WINDLL)
 
 target_link_libraries(RouteASIO
-        PRIVATE CONAN_PKG::spdlog
+        PRIVATE spdlog::spdlog
         PRIVATE asio
         PRIVATE RouteCommon
         PRIVATE winmm)
+
 
 

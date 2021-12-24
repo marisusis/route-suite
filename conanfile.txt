@@ -1,11 +1,28 @@
 [requires]
 spdlog/1.9.1
-boost/1.76.0
+boost/1.78.0
 libsndfile/1.0.31
 argparse/2.1
+imgui/1.85
 
 [generators]
-cmake_multi
+cmake_find_package
+cmake_find_package_multi
+#cmake_multi
+
 
 [imports]
 bin, *.pdb -> ./bin
+./res/bindings, imgui_impl_glfw.cpp -> ../imgui
+./res/bindings, imgui_impl_opengl3.cpp -> ../imgui
+./res/bindings, imgui_impl_glfw.h -> ../imgui
+./res/bindings, imgui_impl_opengl3.h -> ../imgui
+./res/bindings, imgui_impl_win32.cpp -> ../imgui
+./res/bindings, imgui_impl_win32.h -> ../imgui
+./res/bindings, imgui_impl_dx11.cpp -> ../imgui
+./res/bindings, imgui_impl_dx11.h -> ../imgui
+#./res/bindings, imgui_impl_glfw.cpp -> ./vendor/imgui/backends/
+#./res/bindings, imgui_impl_opengl3.cpp -> ./vendor/imgui/backends/
+#./res/bindings, imgui_impl_glfw.h -> ./vendor/imgui/backends/
+#./res/bindings, imgui_impl_opengl3.h -> ./vendor/imgui/backends/
+#./res/bindings, imgui_impl_opengl3_loader.h -> ./vendor/imgui/backends/

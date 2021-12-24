@@ -25,12 +25,16 @@ namespace Route {
 
         while (true) {
 
-            // check for signal
-            if (WaitForSingleObject(theThread->eventHandle, 0) == WAIT_OBJECT_0) {
-                // we exit
-                DBG_CTX(Thread::ThreadHandler, "exiting thread [{}]...", theThread->threadName);
-                theThread->setState(IDLE);
-                break;
+            // if the thread is realtime, let the execute function handle quitting the thread to reduce processing time
+            if (!theThread->realtime) {
+
+                // check for signal to quit thread
+                if (WaitForSingleObject(theThread->eventHandle, 0) == WAIT_OBJECT_0) {
+                    // we exit
+                    DBG_CTX(Thread::ThreadHandler, "exiting thread [{}]...", theThread->threadName);
+                    theThread->setState(IDLE);
+                    break;
+                }
             }
 
             // TODO do something with status?

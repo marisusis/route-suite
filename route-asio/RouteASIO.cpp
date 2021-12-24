@@ -135,7 +135,7 @@ namespace Route {
         toggle = 0;
 
         // create debugger
-        dbg = new ASIODebugger(this, 3000);
+        dbg = new ASIODebugger(this,  3000);
 
     }
 
@@ -223,7 +223,6 @@ namespace Route {
             // start clock
             clock->start();
 
-//            timerOn();            // activate 'hardware'
             started = true;
 
             return ASE_OK;
@@ -243,7 +242,6 @@ namespace Route {
         // stop clock
         clock->stop();
 
-//        timerOff();        // de-activate 'hardware'
         return ASE_OK;
     }
 
@@ -524,8 +522,6 @@ namespace Route {
 
             // latch to system time
             clock->latchTime(&theSystemTime);
-
-//            getNanoSeconds(&theSystemTime);            // latch system time
 
             // process I/O
             processInput();

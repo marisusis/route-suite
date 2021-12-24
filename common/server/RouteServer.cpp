@@ -1,7 +1,6 @@
 #include "shared/SharedStructures.h"
 #include "utils.h"
 #include "RouteServer.h"
-#include "server/client/ClientManager.h"
 
 namespace Route {
 
@@ -29,12 +28,12 @@ namespace Route {
 
         // create the info
         info = static_cast<route_server_info *>(shm_info_region.get_address());
-        strcpy(info->name, "RouteServer by Maris");
-        strcpy(info->version, "0.0.1");
+        memcpy(info->name, SERVER_NAME, SERVER_NAME_LENGTH * sizeof(char));
+        memcpy(info->version, SERVER_VERSION, VERSION_NAME_LENGTH * sizeof(char));
 
         // default sample rate and buffer size
         info->sampleRate = 44100;
-        info->bufferSize = 1024;
+        info->bufferSize = 512;
         info->channelCount = MAX_CHANNELS;
     }
 
