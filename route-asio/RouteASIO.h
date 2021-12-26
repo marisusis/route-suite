@@ -105,6 +105,8 @@ namespace Route {
 
         ASIOError outputReady();
 
+        RunState getState() const;
+
         void bufferSwitch();
 
         long getMilliSeconds() { return milliSeconds; }
@@ -115,6 +117,8 @@ namespace Route {
     private:
 
         friend void myTimer();
+
+        void updateState(RunState newState);
 
         void processInput();
 
@@ -132,6 +136,8 @@ namespace Route {
         ASIOTimeStamp theSystemTime;
         ASIODebugger* dbg;
         ASIOClock* clock;
+        RunState state;
+
         float** inputBuffers;
         float** outputBuffers;
 

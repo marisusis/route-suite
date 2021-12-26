@@ -206,4 +206,20 @@ namespace Route {
 
     }
 
+    std::map<int, Client*>* ClientManager::getClients() {
+        return &clients;
+    }
+
+    route_client* ClientManager::getClientInfo(int ref) {
+
+        if (!activeRefs[ref]) {
+            ERR_CTX(ClientManager::getClientInfo, "client [{}] does not exist", ref);
+            return nullptr;
+        }
+
+        return &(shmClients[ref]);
+
+    }
+
+
 }

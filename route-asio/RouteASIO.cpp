@@ -211,8 +211,9 @@ namespace Route {
     ASIOError RouteASIO::start() {
         DBG_CTX(RouteASIO::start, "");
 
+        updateState(RunState::STARTING);
+
         // start debugger
-//        dbg->start();
 
         if (callbacks) {
             started = false;
@@ -225,14 +226,20 @@ namespace Route {
 
             started = true;
 
+            updateState(RunState::RUNNING);
+
             return ASE_OK;
         }
+
+        updateState(RunState::IDLE);
         return ASE_NotPresent;
     }
 
 
     ASIOError RouteASIO::stop() {
         DBG_CTX(RouteASIO::stop, "");
+
+        updateState(RunState::STOPPING);
 
         // stop debugger
         dbg->stop();
@@ -241,6 +248,8 @@ namespace Route {
 
         // stop clock
         clock->stop();
+
+        updateState(RunState::IDLE);
 
         return ASE_OK;
     }
@@ -514,11 +523,25 @@ namespace Route {
 
     }
 
+    void RouteASIO::updateState(RunState newState) {
+        DBG_CTX(RouteASIO::updateState,"driver state change from {}->{}", stateToString(state), stateToString(newState));
+
+        // update state
+        state = newState;
+
+    }
+
+    RunState RouteASIO::getState() const {
+        return state;
+    }
 
     void RouteASIO::bufferSwitch() {
+        // break if not running
+        if (getState() != RunState::RUNNING) return;
+
         if (started && callbacks) {
             // trigger debugger buffer switch tick
-            dbg->bufferTick();
+//            dbg->bufferTick();
 
             // latch to system time
             clock->latchTime(&theSystemTime);
@@ -574,7 +597,7 @@ namespace Route {
         lastTime = std::chrono::high_resolution_clock::now();
 
         // start the thread
-        thread.start();
+//        thread.start();
     }
 
     void ASIODebugger::stop() {

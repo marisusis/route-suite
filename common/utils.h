@@ -16,6 +16,8 @@
 
 std::string statusToString(STATUS s);
 
+std::string stateToString(RunState s);
+
 template<typename T>
 auto convert(T&& t)
 {

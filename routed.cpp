@@ -77,6 +77,7 @@ int main() {
                 server->close();
             },
             "stop the server");
+
     rootMenu->Insert(
             "start",
             [](std::ostream& out) {
@@ -103,6 +104,31 @@ int main() {
                 server->start();
             },
             "start the server");
+
+    rootMenu->Insert("listClients", [](std::ostream& out){
+
+        if (server->getState() != RUNNING) {
+            spdlog::error("server is not running!");
+            return;
+        }
+
+        // get client manager from server
+        Route::ClientManager* clientManager = server->getClientManager();
+
+        // get map of clients
+        std::map<int, Route::Client*>* clients = clientManager->getClients();
+
+        // iterate through all clients
+        for (auto it = clients->begin(); it != clients->end(); ++it) {
+
+            // get client info
+            Route::route_client* info = clientManager->getClientInfo(it->first);
+
+            spdlog::info("found client [{0}/{1}] ", it->first, info->name);
+
+        }
+
+    }, "list all connected clients");
 
     // create a cli instance
     cli::Cli cli( std::move(rootMenu), std::make_unique<cli::FileHistoryStorage>(".cli"));

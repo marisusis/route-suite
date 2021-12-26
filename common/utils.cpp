@@ -11,6 +11,22 @@ float calculateRMS(const float* values, int size) {
     return sqrt(sum / ((double) size));
 }
 
+std::string stateToString(RunState s) {
+    switch (s) {
+        case RUNNING:
+            return "RUNNING";
+        case IDLE:
+            return "IDLE";
+        case STARTING:
+            return "STARTING";
+        case STOPPING:
+            return "STOPPING";
+        default:
+            CRT_CTX(statusToString, "bad status!");
+            return "BAD_STATE";
+    }
+}
+
 std::string statusToString(STATUS s) {
     switch (s) {
         case STATUS_OK:

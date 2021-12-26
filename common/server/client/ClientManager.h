@@ -43,6 +43,10 @@ namespace Route {
         STATUS addClient(std::string clientName, const int& pid, int* ref);
 
         STATUS closeClient(const int ref);
+
+        route_client* getClientInfo(int ref);
+
+        std::map<int, Client*>* getClients();
     };
 
 }
