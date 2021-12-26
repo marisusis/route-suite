@@ -26,6 +26,11 @@
 #define ROUTE_SHM_BUFFERS GLOBAL_NAMESPACE_PREFIX "_shm_" "buffers"
 #define ROUTE_SHM_CLIENTS GLOBAL_NAMESPACE_PREFIX "_shm_" "clients"
 
+// synchronization
+#define ROUTE_MUTEX_PREFIX GLOBAL_NAMESPACE_PREFIX "_mutex_"
+#define ROUTE_CLOCK_MUTEX_PREFIX ROUTE_MUTEX_PREFIX "clock_"
+#define MUTEX_NAME_SIZE 128
+
 // values
 #define MAX_CLIENTS 16
 #define MAX_CHANNELS 16

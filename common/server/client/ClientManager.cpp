@@ -118,6 +118,9 @@ namespace Route {
         routeClient->inputLatency = server->getServerInfo()->bufferSize;
         routeClient->outputLatency = server->getServerInfo()->bufferSize * 2;
 
+        // assign mutex name
+        memcpy(routeClient->clockMutexName, format_string("%s%d", ROUTE_CLOCK_MUTEX_PREFIX, *ref).c_str(), sizeof(char) * MUTEX_NAME_SIZE);
+
         // open the client
         client->open();
 

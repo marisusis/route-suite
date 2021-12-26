@@ -41,6 +41,8 @@ namespace Route {
 
         route_channel_info inputChannels[MAX_CHANNELS];
         route_channel_info outputChannels[MAX_CHANNELS];
+
+        char clockMutexName[MUTEX_NAME_SIZE];
     };
 
 

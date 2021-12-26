@@ -48,24 +48,4 @@ std::string format_string(const std::string& format, Args&& ... args)
     return format_string_internal(format, convert(std::forward<Args>(args))...);
 }
 
-class Refable {
-
-private:
-    int refNum = -1;
-
-public:
-    Refable() = default;
-
-    virtual ~Refable() = 0;
-
-    void setRefNum(int new_refnum) {
-        refNum = new_refnum;
-    }
-
-    [[nodiscard]] int getRefNum() const {
-        return refNum;
-    }
-
-};
-
 #endif //ROUTE_SUITE_UTILS_H

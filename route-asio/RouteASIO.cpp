@@ -212,7 +212,7 @@ namespace Route {
         DBG_CTX(RouteASIO::start, "");
 
         // start debugger
-        dbg->start();
+//        dbg->start();
 
         if (callbacks) {
             started = false;

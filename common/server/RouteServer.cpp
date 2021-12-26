@@ -4,7 +4,7 @@
 
 namespace Route {
 
-    RouteServer::RouteServer() : clientManager(this), bufferManager(this) {
+    RouteServer::RouteServer() : clientManager(this), bufferManager(this), audioEngine(this) {
         LOG_CTX(RouteServer::new, "");
 
         // remove shared memory objects in case they exist
@@ -33,7 +33,7 @@ namespace Route {
 
         // default sample rate and buffer size
         info->sampleRate = 44100;
-        info->bufferSize = 512;
+        info->bufferSize = 1024;
         info->channelCount = MAX_CHANNELS;
     }
 
@@ -58,6 +58,8 @@ namespace Route {
         // open client manager
         clientManager.open();
 
+        // open the audio engine
+        audioEngine.open();
 
         return STATUS_OK;
     }
@@ -69,6 +71,12 @@ namespace Route {
 
     STATUS RouteServer::close() {
         LOG_CTX(RouteServer::close, "closing server...");
+
+        // stop server if running
+        if (this->serverState == RunState::RUNNING) this->stop();
+
+        // close the audio engine
+        audioEngine.close();
 
         // close client manager
         clientManager.close();
@@ -85,30 +93,61 @@ namespace Route {
     STATUS RouteServer::start() {
         LOG_CTX(RouteServer::start, "starting server...");
 
+        // set state to starting
+        updateServerState(RunState::STARTING);
+
         // start the request channel
-        return requestChannel.start();
+        STATUS ret = requestChannel.start();
+
+        // server is now started
+        updateServerState(RunState::RUNNING);
+
+        return ret;
     }
 
     STATUS RouteServer::stop() {
         LOG_CTX(RouteServer::stop, "stopping server...");
 
-        // alert all clients
+        // set state to stopping
+        updateServerState(RunState::STOPPING);
 
+        // TODO alert all clients
 
         // stop the request channel
-        return requestChannel.stop();
+        STATUS ret = requestChannel.stop();
+
+        // update state
+        updateServerState(RunState::IDLE);
+
+        return ret;
     }
 
     ClientManager* RouteServer::getClientManager() {
         return &clientManager;
     }
 
-    BufferManager *RouteServer::getBufferManager() {
+    BufferManager* RouteServer::getBufferManager() {
         return &bufferManager;
+    }
+
+    RouteEngine* RouteServer::getAudioEngine() {
+        return &audioEngine;
     }
 
     route_server_info* RouteServer::getServerInfo() {
         return info;
+    }
+
+    STATUS RouteServer::updateServerState(RunState newState) {
+        DBG_CTX(RouteServer::updateServerState, "updating server state {0}->{1}");
+
+        serverState = newState;
+
+        return STATUS_OK;
+    }
+
+    RunState RouteServer::getState() const {
+        return serverState;
     }
 
 }

@@ -1,6 +1,7 @@
 #ifndef ROUTE_SUITE_ROUTESERVER_H
 #define ROUTE_SUITE_ROUTESERVER_H
 
+#include <engine/RouteEngine.h>
 #include "pipes/ServerChannel.h"
 #include "server/client/ClientManager.h"
 #include "types.h"
@@ -24,11 +25,15 @@ namespace Route {
     private:
         ServerChannel requestChannel;
         ClientManager clientManager;
+        RouteEngine audioEngine;
         BufferManager bufferManager;
+        RunState serverState = RunState::IDLE;
         int currentReferenceNumber = 1;
         shared_memory_object shm_info;
         mapped_region shm_info_region;
         route_server_info* info;
+
+        STATUS updateServerState(RunState newState);
 
     public:
         RouteServer();
@@ -42,6 +47,9 @@ namespace Route {
 
         ClientManager* getClientManager();
         BufferManager* getBufferManager();
+        RouteEngine* getAudioEngine();
+
+        RunState getState() const;
 
         route_server_info* getServerInfo();
 
