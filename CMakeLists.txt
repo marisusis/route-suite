@@ -25,7 +25,7 @@ function(download_file url filename hash_type hash)
 endfunction(download_file)
 
 # using at least C++17
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/conanstuff")
@@ -69,7 +69,44 @@ add_library(RouteCommon STATIC
             common/pipes/PipeClient.cpp
             common/constants.h
             common/types.h
-            common/utils.h common/pipes/ServerChannel.cpp common/pipes/ServerChannel.h common/thread/Thread.cpp common/thread/Thread.h common/thread/Event.cpp common/thread/Event.h common/thread/Mutex.cpp common/thread/Mutex.h common/thread/Event.cpp common/thread/Event.h common/pipes/PipeRequest.h common/server/RouteServer.cpp common/server/RouteServer.h common/pipes/ClientChannel.cpp common/pipes/ClientChannel.h common/pipes/RequestDecoder.cpp common/pipes/RequestDecoder.h common/client/RouteClient.cpp common/client/RouteClient.h common/utils.cpp common/server/client/ClientManager.cpp common/server/client/ClientManager.h common/server/client/Client.cpp common/server/client/Client.h common/pipes/NotifyClientChannel.cpp common/pipes/NotifyClientChannel.h common/shared/SharedStructures.h common/server/BufferManager.cpp common/server/BufferManager.h common/engine/RouteEngine.cpp common/engine/RouteEngine.h common/engine/AudioClock.cpp common/engine/AudioClock.h)
+            common/utils.h 
+            common/pipes/ServerChannel.cpp 
+            common/pipes/ServerChannel.h
+            common/thread/Thread.cpp
+            common/thread/Thread.h
+            common/thread/Event.cpp
+            common/thread/Event.h
+            common/thread/Mutex.cpp
+            common/thread/Mutex.h
+            common/thread/Event.cpp
+            common/thread/Event.h
+            common/pipes/PipeRequest.h
+            common/server/RouteServer.cpp
+            common/server/RouteServer.h
+            common/pipes/ClientChannel.cpp
+            common/pipes/ClientChannel.h
+            common/pipes/RequestDecoder.cpp
+            common/pipes/RequestDecoder.h
+            common/client/RouteClient.cpp
+            common/client/RouteClient.h
+            common/utils.cpp
+            common/server/client/ClientManager.cpp
+            common/server/client/ClientManager.h
+            common/server/client/Client.cpp
+            common/server/client/Client.h
+            common/pipes/NotifyClientChannel.cpp
+            common/pipes/NotifyClientChannel.h
+            common/shared/SharedStructures.h
+            common/server/BufferManager.cpp
+            common/server/BufferManager.h
+            common/engine/RouteEngine.cpp
+            common/engine/RouteEngine.h
+            common/engine/AudioClock.cpp
+            common/engine/AudioClock.h
+        common/graph/graph_manager.cpp
+        common/graph/graph_manager.h
+            common/graph/port.cpp
+            common/graph/port.h)
 target_link_libraries(RouteCommon
         PUBLIC argparse::argparse
         PUBLIC spdlog::spdlog
@@ -87,5 +124,10 @@ add_subdirectory(api)
 
 add_executable(RouteD routed.cpp)
 target_link_libraries(RouteD
+        PRIVATE RouteCommon
+        PRIVATE cli)
+
+add_executable(TestGraphs test_graphs.cpp)
+target_link_libraries(TestGraphs
         PRIVATE RouteCommon
         PRIVATE cli)

@@ -2,6 +2,7 @@
 #define ROUTE_SUITE_ROUTESERVER_H
 
 #include <engine/RouteEngine.h>
+#include <graph/graph_manager.h>
 #include "pipes/ServerChannel.h"
 #include "server/client/ClientManager.h"
 #include "types.h"
@@ -27,6 +28,7 @@ namespace Route {
         ClientManager clientManager;
         RouteEngine audioEngine;
         BufferManager bufferManager;
+        graph_manager graphManager;
         RunState serverState = RunState::IDLE;
         int currentReferenceNumber = 1;
         shared_memory_object shm_info;
@@ -48,6 +50,7 @@ namespace Route {
         ClientManager* getClientManager();
         BufferManager* getBufferManager();
         RouteEngine* getAudioEngine();
+        graph_manager* getGraphManager();
 
         RunState getState() const;
 

@@ -347,7 +347,7 @@ namespace Route {
 
 
     ASIOError RouteASIO::getChannelInfo(ASIOChannelInfo* info) {
-//        DBG_CTX(RouteASIO::getChannelInfo, "{} channel #{} named {}", info->isInput ? "input" : "output", info->channel,
+//        DBG_CTX(RouteASIO::getChannelInfo, "{} channel #{} named {}", info->is_input ? "input" : "output", info->channel,
 //                info->name);
         if (info->channel < 0 || info->channel >= routeClient->getChannelCount())
             return ASE_InvalidParameter;
@@ -516,10 +516,10 @@ namespace Route {
             }
         }
 
-        for (int i = 0; i < routeClient->getChannelCount(); i++) {
+/*        for (int i = 0; i < routeClient->getChannelCount(); i++) {
             memcpy(routeClient->getBuffer(true, i)->buffer1, routeClient->getBuffer(false, i)->buffer1, blockFrames * sizeof(float));
             memcpy(routeClient->getBuffer(true, i)->buffer2, routeClient->getBuffer(false, i)->buffer2, blockFrames * sizeof(float));
-        }
+        }*/
 
     }
 

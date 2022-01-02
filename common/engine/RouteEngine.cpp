@@ -39,6 +39,9 @@ STATUS Route::RouteEngine::close() {
 STATUS Route::RouteEngine::tick() {
 //    DBG_CTX(RouteEngine::tick,"");
 
+    // process the graph
+    server->getGraphManager()->process();
+
     return STATUS_OK;
 }
 

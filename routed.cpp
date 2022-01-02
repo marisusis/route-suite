@@ -79,6 +79,31 @@ int main() {
             "stop the server");
 
     rootMenu->Insert(
+            "connect",
+            [](std::ostream& out, int a, int b) {
+
+                // attempt to connect two ports
+                server->getGraphManager()->connect_ports(a, b);
+
+            }, "connect two ports");
+
+    rootMenu->Insert(
+            "listConnections",
+            [](std::ostream& out) {
+                if (server->getState() != RUNNING) {
+                    spdlog::error("server is not running!");
+                    return;
+                }
+
+                auto connections = server->getGraphManager()->get_connections();
+
+                std::for_each(connections.begin(), connections.end(), [](const Route::connection& item) {
+                    spdlog::info("[{}] --> [{}]", item.get_source().get_name(), item.get_destination().get_name());
+                });
+
+            }, "list connections");
+
+    rootMenu->Insert(
             "start",
             [](std::ostream& out) {
                 switch (server->getState()) {
@@ -119,16 +144,32 @@ int main() {
         std::map<int, Route::Client*>* clients = clientManager->getClients();
 
         // iterate through all clients
-        for (auto it = clients->begin(); it != clients->end(); ++it) {
+        for (auto& client : *clients) {
 
             // get client info
-            Route::route_client* info = clientManager->getClientInfo(it->first);
+            Route::route_client* info = clientManager->getClientInfo(client.first);
 
-            spdlog::info("found client [{0}/{1}] ", it->first, info->name);
+            spdlog::info("found client [{0}/{1}] ", client.first, info->name);
 
         }
 
     }, "list all connected clients");
+
+    rootMenu->Insert("listPorts", [](std::ostream& out){
+
+        if (server->getState() != RUNNING) {
+            spdlog::error("server is not running!");
+            return;
+        }
+
+        auto ports = server->getGraphManager()->getPorts();
+
+        std::for_each(ports.begin(), ports.end(), [](Route::port p) {
+            spdlog::info("[{}]: {}", p.get_ref(), p.get_name());
+        });
+
+    }, "list all registered ports");
+
 
     // create a cli instance
     cli::Cli cli( std::move(rootMenu), std::make_unique<cli::FileHistoryStorage>(".cli"));

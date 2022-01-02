@@ -112,6 +112,10 @@ namespace Route {
             // copy the info to shm
             memcpy(&(routeClient->inputChannels[i]), inInfo, sizeof(route_channel_info));
             memcpy(&(routeClient->outputChannels[i]), outInfo, sizeof(route_channel_info));
+
+            // register ports with the graph manager
+            server->getGraphManager()->add_port(inInfo->name, *ref, i, true);
+            server->getGraphManager()->add_port(outInfo->name, *ref, i, false);
         }
 
         // set default I/O latency
@@ -151,6 +155,10 @@ namespace Route {
         for (int i = 0; i < MAX_CHANNELS; i++) {
             server->getBufferManager()->freeBuffer(shmClient.inputBufferMap[i]);
             server->getBufferManager()->freeBuffer(shmClient.outputBufferMap[i]);
+
+            // remove ports
+            server->getGraphManager()->remove_port(ref, i, true);
+            server->getGraphManager()->remove_port(ref, i, false);
         }
 
         // free its refnum

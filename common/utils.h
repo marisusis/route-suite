@@ -14,7 +14,7 @@
 #define WRN_CTX(Context, ...) spdlog::warn("["#Context"] " __VA_ARGS__)
 
 
-std::string statusToString(STATUS s);
+std::string statusToString(const STATUS s);
 
 std::string stateToString(RunState s);
 

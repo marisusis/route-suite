@@ -4,7 +4,7 @@
 
 namespace Route {
 
-    RouteServer::RouteServer() : clientManager(this), bufferManager(this), audioEngine(this) {
+    RouteServer::RouteServer() : clientManager(this), bufferManager(this), audioEngine(this), graphManager(this) {
         LOG_CTX(RouteServer::new, "");
 
         // remove shared memory objects in case they exist
@@ -148,6 +148,10 @@ namespace Route {
 
     RunState RouteServer::getState() const {
         return serverState;
+    }
+
+    graph_manager* RouteServer::getGraphManager() {
+        return &graphManager;
     }
 
 }

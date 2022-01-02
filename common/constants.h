@@ -38,6 +38,7 @@
 #define MAX_BUFFER_SIZE 1024
 #define MAX_IN_PER_CLIENT 8
 #define MAX_OUT_PER_CLIENT 8
+#define MAX_PORTS (MAX_CLIENTS * MAX_CHANNELS * 256)
 
 // Status codes
 //#define STATUS_OK ((STATUS) 0x1)
