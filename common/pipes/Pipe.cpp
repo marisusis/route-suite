@@ -1,7 +1,7 @@
 #include "Pipe.h"
 #include "utils.h"
 
-namespace Route {
+namespace route {
 
     STATUS Pipe::read(void* data, int size) {
         // bytes read

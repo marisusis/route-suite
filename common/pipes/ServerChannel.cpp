@@ -1,9 +1,9 @@
 #include "ServerChannel.h"
 #include "utils.h"
 #include "PipeRequest.h"
-#include "server/RouteServer.h"
+#include "server/route_server.h"
 
-namespace Route {
+namespace route {
 
     HANDLE ChannelConnectionThread::mutexHandle = nullptr;
 
@@ -32,7 +32,7 @@ namespace Route {
 
     }
 
-    STATUS ServerChannel::open(RouteServer* the_server, const char* server_name) {
+    STATUS ServerChannel::open(route_server* the_server, const char* server_name) {
 
         // TODO not complete, see jack2
 
@@ -202,7 +202,7 @@ namespace Route {
         return returnStatus;
     }
 
-    STATUS ChannelConnectionThread::open(RouteServer* the_server) {
+    STATUS ChannelConnectionThread::open(route_server* the_server) {
         DBG_CTX(ChannelConnectionThread::open, "opening channel thread...");
 
         // start the thread

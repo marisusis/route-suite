@@ -1,7 +1,7 @@
 #include "Thread.h"
 #include "utils.h"
 
-namespace Route {
+namespace route {
 
     DWORD WINAPI Thread::ThreadHandler(void* arg) {
 
@@ -25,12 +25,16 @@ namespace Route {
 
         while (true) {
 
-            // check for signal
-            if (WaitForSingleObject(theThread->eventHandle, 0) == WAIT_OBJECT_0) {
-                // we exit
-                DBG_CTX(Thread::ThreadHandler, "exiting thread [{}]...", theThread->threadName);
-                theThread->setState(IDLE);
-                break;
+            // if the thread is realtime, let the execute function handle quitting the thread to reduce processing time
+            if (!theThread->realtime) {
+
+                // check for signal to quit thread
+                if (WaitForSingleObject(theThread->eventHandle, 0) == WAIT_OBJECT_0) {
+                    // we exit
+                    DBG_CTX(Thread::ThreadHandler, "exiting thread [{}]...", theThread->threadName);
+                    theThread->setState(IDLE);
+                    break;
+                }
             }
 
             // TODO do something with status?
@@ -43,7 +47,11 @@ namespace Route {
         return 0;
     }
 
-    Thread::Thread(Runnable* runnable, const char* thread_name) : runnable(runnable), threadName(thread_name) {
+    Thread::Thread(Runnable* runnable, const char* thread_name, bool realtime) : runnable(runnable), threadName(thread_name), realtime(realtime) {
+        if (realtime) {
+            WRN_CTX(Thread::new, "REALTIME thread [{0}] created.", thread_name);
+        }
+
         // thread is idle
         threadState.store(IDLE);
 
@@ -53,7 +61,7 @@ namespace Route {
                 FALSE, // event resets automatically
                 FALSE, // initial state unsignalled
                 NULL
-                );
+        );
 
         if (eventHandle == NULL) {
             CRT_CTX(Thread::new, "unable to create event handle for [{}]!", threadName);
@@ -61,6 +69,10 @@ namespace Route {
 
         // no thread handle yet
         threadHandle = INVALID_HANDLE_VALUE;
+    }
+
+    Thread::Thread(Runnable* runnable, const char* thread_name) : Thread(runnable, thread_name, false) {
+
 
 
     }
@@ -81,7 +93,7 @@ namespace Route {
         threadState.store(STARTING);
 
         // start thread
-        STATUS startStatus = startInternal(&threadHandle, 0, 0, ThreadHandler, this);
+        STATUS startStatus = startInternal(&threadHandle, 0, realtime, ThreadHandler, this);
         if (startStatus == STATUS_OK) {
             threadState.store(IDLE);
             return STATUS_OK;
@@ -122,6 +134,7 @@ namespace Route {
             DBG_CTX(Thread::startInternal, "setting thread [{}] to realtime priority...", threadName);
 
             if (!SetThreadPriority(*thread_handle, THREAD_PRIORITY_TIME_CRITICAL)) {
+
                 WRN_CTX(Thread::startInternal, "cannot set thread [{}] to realtime!", threadName);
                 return STATUS_OK;
             }
@@ -205,5 +218,7 @@ namespace Route {
     bool Thread::isThread() {
         return GetCurrentThread() == threadHandle;
     }
+
+
 
 }

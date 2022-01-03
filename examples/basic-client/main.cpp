@@ -1,7 +1,7 @@
 #include "pipes/ClientChannel.h"
 #include <chrono>
 #include <thread>
-#include <client/RouteClient.h>
+#include <client/route_client.h>
 
 int main() {
 
@@ -9,7 +9,7 @@ int main() {
     spdlog::set_pattern("[%H:%M:%S:%e] [thread %t] %^[%l] %v%$");
 
     // create client
-    Route::RouteClient client("BasicClient");
+    route::route_client client("BasicClient");
 
     client.open();
 

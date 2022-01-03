@@ -6,7 +6,7 @@
 #include "PipeRequest.h"
 #include "PipeServer.h"
 
-namespace Route {
+namespace route {
 
     class ClientChannel : public Runnable {
 

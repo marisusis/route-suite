@@ -24,7 +24,7 @@ if (packetSize != size()) {       \
 
 #define WriteTransaction(var, type) ValidateTransaction(client->write(&(var), sizeof(type)))
 
-namespace Route {
+namespace route {
 
     struct PipeRequest {
 

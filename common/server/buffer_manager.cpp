@@ -1,11 +1,11 @@
-#include "BufferManager.h"
+#include "buffer_manager.h"
 #include "utils.h"
-#include "RouteServer.h"
+#include "route_server.h"
 
-namespace Route {
+namespace route {
 
-    BufferManager::BufferManager(RouteServer* server) : server(server) {
-        DBG_CTX(BufferManager::new, "");
+    buffer_manager::buffer_manager(route_server* server) : server(server) {
+        DBG_CTX(buffer_manager::new, "");
 
         // set all active refs to disabled
         for (int i = 0; i < MAX_BUFFERS; i++) {
@@ -13,12 +13,12 @@ namespace Route {
         }
     }
 
-    BufferManager::~BufferManager() {
-        DBG_CTX(BufferManager::~, "");
+    buffer_manager::~buffer_manager() {
+        DBG_CTX(buffer_manager::~, "");
     }
 
-    STATUS BufferManager::open() {
-        DBG_CTX(BufferManager::open, "opening buffer manager...");
+    STATUS buffer_manager::open() {
+        DBG_CTX(buffer_manager::open, "opening buffer manager...");
 
         // remove shm objects in case they exist
         shared_memory_object::remove(ROUTE_SHM_BUFFERS);
@@ -26,22 +26,22 @@ namespace Route {
         // load shared memory
         shm_buffers = shared_memory_object(open_or_create, ROUTE_SHM_BUFFERS, read_write);
 
-        shm_buffers.truncate(sizeof(route_buffer) * MAX_BUFFERS);
+        shm_buffers.truncate(sizeof(buffer_info) * MAX_BUFFERS);
 
         // map the shared memory for buffers
         shm_buffers_region = mapped_region(shm_buffers,
                                            read_write,
                                            0,
-                                           sizeof(route_buffer) * MAX_BUFFERS);
+                                           sizeof(buffer_info) * MAX_BUFFERS);
 
         // use the address
-        buffers = static_cast<route_buffer*>(shm_buffers_region.get_address());
+        buffers = static_cast<buffer_info*>(shm_buffers_region.get_address());
 
         return STATUS_OK;
     }
 
-    STATUS BufferManager::close() {
-        DBG_CTX(BufferManager::close, "closing buffer manager...");
+    STATUS buffer_manager::close() {
+        DBG_CTX(buffer_manager::close, "closing buffer manager...");
 
         // remove our shared memory
         shared_memory_object::remove(ROUTE_SHM_BUFFERS);
@@ -49,13 +49,13 @@ namespace Route {
         return STATUS_OK;
     }
 
-    route_buffer* BufferManager::getBuffer(int index) {
+    buffer_info* buffer_manager::get_buffer(int index) {
         return &(buffers[index]);
     }
 
-    STATUS BufferManager::freeBuffer(int buf) {
+    STATUS buffer_manager::free_buffer(int buf) {
 
-        DBG_CTX(BufferManager::freeBuffer, "freeing buffer {0}", buf);
+        DBG_CTX(buffer_manager::free_buffer, "freeing buffer {0}", buf);
 
 
         // check if the ref is active
@@ -69,7 +69,7 @@ namespace Route {
 
     }
 
-    STATUS BufferManager::allocateBuffer(int &buf) {
+    STATUS buffer_manager::allocate_buffer(int &buf) {
         // start at 0
         buf = 0;
 
@@ -94,7 +94,7 @@ namespace Route {
         // allocate ref
         activeBuffers[buf] = true;
 
-        DBG_CTX(BufferManager::allocateBuffer, "allocated buffer {0}", buf);
+        DBG_CTX(buffer_manager::allocate_buffer, "allocated buffer {0}", buf);
 
         return STATUS_OK;
     }

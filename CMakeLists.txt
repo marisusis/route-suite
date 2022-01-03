@@ -3,6 +3,19 @@ project(route_suite)
 
 add_compile_definitions(_WINDLL)
 
+# disable checking for cmake and conan compiler version match
+set( CONAN_DISABLE_CHECK_COMPILER 1)
+
+configure_file(cli-download/CMakeLists.txt.in cli-download/CMakeLists.txt)
+
+execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/cli-download"
+        )
+execute_process(COMMAND "${CMAKE_COMMAND}" --build .
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/cli-download"
+        )
+
+add_subdirectory("${CMAKE_BINARY_DIR}/cli-src")
 
 function(download_file url filename hash_type hash)
 
@@ -15,9 +28,11 @@ function(download_file url filename hash_type hash)
 endfunction(download_file)
 
 # using at least C++17
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/conan_modules")
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_LIST_DIR}/conan_modules")
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/asiosdk.zip)
     file(DOWNLOAD https://download.steinberg.net/sdk_downloads/asiosdk_2.3.3_2019-06-14.zip ${CMAKE_CURRENT_SOURCE_DIR}/asiosdk.zip
@@ -33,10 +48,19 @@ endif()
 find_package(ASIO REQUIRED)
 
 # conan.io
-include(conanbuildinfo_multi.cmake)
-conan_basic_setup(TARGETS)
+#include(conanbuildinfo_multi.cmake)
+#conan_basic_setup(TARGETS)
 
 set(COMMON_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/common")
+set(IMGUI_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/imgui")
+
+
+
+#find_package(DirectX11)
+find_package(imgui CONFIG)
+find_package(argparse CONFIG)
+find_package(spdlog CONFIG)
+find_package(boost CONFIG)
 
 # Common library for route
 add_library(RouteCommon STATIC
@@ -48,11 +72,48 @@ add_library(RouteCommon STATIC
             common/pipes/PipeClient.cpp
             common/constants.h
             common/types.h
-            common/utils.h common/pipes/ServerChannel.cpp common/pipes/ServerChannel.h common/thread/Thread.cpp common/thread/Thread.h common/thread/Event.cpp common/thread/Event.h common/thread/Mutex.cpp common/thread/Mutex.h common/thread/Event.cpp common/thread/Event.h common/pipes/PipeRequest.h common/server/RouteServer.cpp common/server/RouteServer.h common/pipes/ClientChannel.cpp common/pipes/ClientChannel.h common/pipes/RequestDecoder.cpp common/pipes/RequestDecoder.h common/client/RouteClient.cpp common/client/RouteClient.h common/utils.cpp common/server/client/ClientManager.cpp common/server/client/ClientManager.h common/server/client/Client.cpp common/server/client/Client.h common/pipes/NotifyClientChannel.cpp common/pipes/NotifyClientChannel.h common/shared/SharedStructures.h common/server/BufferManager.cpp common/server/BufferManager.h)
+            common/utils.h 
+            common/pipes/ServerChannel.cpp 
+            common/pipes/ServerChannel.h
+            common/thread/Thread.cpp
+            common/thread/Thread.h
+            common/thread/Event.cpp
+            common/thread/Event.h
+            common/thread/Mutex.cpp
+            common/thread/Mutex.h
+            common/thread/Event.cpp
+            common/thread/Event.h
+            common/pipes/PipeRequest.h
+        common/server/route_server.cpp
+        common/server/route_server.h
+            common/pipes/ClientChannel.cpp
+            common/pipes/ClientChannel.h
+            common/pipes/RequestDecoder.cpp
+            common/pipes/RequestDecoder.h
+        common/client/route_client.cpp
+        common/client/route_client.h
+            common/utils.cpp
+        common/server/client/client_manager.cpp
+        common/server/client/client_manager.h
+            common/server/client/Client.cpp
+            common/server/client/Client.h
+            common/pipes/NotifyClientChannel.cpp
+            common/pipes/NotifyClientChannel.h
+        common/shared/shared_structures.h
+        common/server/buffer_manager.cpp
+        common/server/buffer_manager.h
+        common/engine/route_engine.cpp
+        common/engine/route_engine.h
+        common/engine/audio_clock.cpp
+        common/engine/audio_clock.h
+        common/graph/graph_manager.cpp
+        common/graph/graph_manager.h
+            common/graph/port.cpp
+            common/graph/port.h)
 target_link_libraries(RouteCommon
-        PUBLIC CONAN_PKG::argparse
-        PUBLIC CONAN_PKG::spdlog
-        PUBLIC CONAN_PKG::boost)
+        PUBLIC argparse::argparse
+        PUBLIC spdlog::spdlog
+        PUBLIC Boost::boost)
 target_include_directories(RouteCommon
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/common)
 
@@ -66,4 +127,10 @@ add_subdirectory(api)
 
 add_executable(RouteD routed.cpp)
 target_link_libraries(RouteD
-        PRIVATE RouteCommon)
+        PRIVATE RouteCommon
+        PRIVATE cli)
+
+add_executable(TestGraphs test_graphs.cpp)
+target_link_libraries(TestGraphs
+        PRIVATE RouteCommon
+        PRIVATE cli)

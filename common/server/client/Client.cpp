@@ -1,7 +1,7 @@
 #include "Client.h"
 #include "utils.h"
 
-namespace Route {
+namespace route {
 
     Client::Client(std::string& client_name, int ref) : ref(ref), clientName(client_name) {
         DBG_CTX(Client::new, "new client with ref [{}].", ref);

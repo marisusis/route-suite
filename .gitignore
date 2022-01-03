@@ -9,3 +9,7 @@
 /conanbuildinfo_release.cmake
 /conaninfo.txt
 /graph_info.json
+/conan_modules/
+/imgui/
+/asiosdk/
+

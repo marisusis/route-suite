@@ -3,6 +3,13 @@
 
 #include <string>
 
+enum RunState {
+    RUNNING,
+    IDLE,
+    STARTING,
+    STOPPING
+};
+
 typedef enum STATUS_T {
 
     // All is ok.
@@ -17,7 +24,9 @@ typedef enum STATUS_T {
     STATUS_BAD_REQUEST,
     STATUS_NO_TRANSACTION,
     STATUS_NO_REF,
-    STATUS_NO_BUFFER
+    STATUS_NO_BUFFER,
+    STATUS_BREAK,
+    STATUS_PORT_EXISTS
 
 } STATUS;
 

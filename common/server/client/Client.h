@@ -3,7 +3,7 @@
 
 #include "pipes/NotifyClientChannel.h"
 
-namespace Route {
+namespace route {
 
     class Client {
 

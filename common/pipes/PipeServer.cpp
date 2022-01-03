@@ -3,7 +3,7 @@
 #include "utils.h"
 #include "PipeClient.h"
 
-namespace Route {
+namespace route {
     PipeServer::PipeServer() : Pipe() {
         DBG_CTX(PipeServer::new, "new PipeServer.");
     }

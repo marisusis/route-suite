@@ -8,14 +8,17 @@ add_library(RouteASIO SHARED
         wintimer.cpp
         RouteASIO.def
         RouteASIO.cpp
-        RouteASIO.h)
+        RouteASIO.h ASIOClock.cpp ASIOClock.h)
+
+target_compile_options(RouteASIO PRIVATE /Zc:strictStrings-)
 
 target_compile_definitions(RouteASIO PRIVATE _WINDLL)
 
 target_link_libraries(RouteASIO
-        PRIVATE CONAN_PKG::spdlog
+        PRIVATE spdlog::spdlog
         PRIVATE asio
         PRIVATE RouteCommon
         PRIVATE winmm)
+
 
 

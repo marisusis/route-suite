@@ -3,7 +3,7 @@
 
 #include "Pipe.h"
 
-namespace Route {
+namespace route {
     class PipeClient : public Pipe {
 
     public:

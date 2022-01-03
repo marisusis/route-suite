@@ -58,7 +58,7 @@ Napi::Function APIClientWrap::GetClass(Napi::Env env) {
             {
                     APIClientWrap::InstanceMethod("open", &APIClientWrap::Open),
                     APIClientWrap::InstanceMethod("close", &APIClientWrap::Close),
-                    APIClientWrap::InstanceMethod("getRef", &APIClientWrap::GetRef)
+                    APIClientWrap::InstanceMethod("get_ref", &APIClientWrap::GetRef)
             });
 }
 

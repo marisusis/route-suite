@@ -3,7 +3,7 @@
 
 #include "PipeClient.h"
 
-namespace Route {
+namespace route {
 
     class NotifyClientChannel {
     private:

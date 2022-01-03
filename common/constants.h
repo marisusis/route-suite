@@ -8,9 +8,11 @@
 #define GLOBAL_NAMESPACE_PREFIX "route"
 
 // names
-#define SERVER_NAME_LENGTH 256
+#define SERVER_NAME_LENGTH 64
 #define CLIENT_NAME_SIZE 128
+#define VERSION_NAME_LENGTH 16
 #define SERVER_NAME "RouteD"
+#define SERVER_VERSION "0.0.2"
 
 // Named pipes
 #define PIPE_NAME_SIZE 256
@@ -24,6 +26,11 @@
 #define ROUTE_SHM_BUFFERS GLOBAL_NAMESPACE_PREFIX "_shm_" "buffers"
 #define ROUTE_SHM_CLIENTS GLOBAL_NAMESPACE_PREFIX "_shm_" "clients"
 
+// synchronization
+#define ROUTE_MUTEX_PREFIX GLOBAL_NAMESPACE_PREFIX "_mutex_"
+#define ROUTE_CLOCK_MUTEX_PREFIX ROUTE_MUTEX_PREFIX "clock_"
+#define MUTEX_NAME_SIZE 128
+
 // values
 #define MAX_CLIENTS 16
 #define MAX_CHANNELS 16
@@ -31,6 +38,7 @@
 #define MAX_BUFFER_SIZE 1024
 #define MAX_IN_PER_CLIENT 8
 #define MAX_OUT_PER_CLIENT 8
+#define MAX_PORTS (MAX_CLIENTS * MAX_CHANNELS * 256)
 
 // Status codes
 //#define STATUS_OK ((STATUS) 0x1)

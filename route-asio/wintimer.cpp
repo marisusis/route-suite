@@ -7,7 +7,7 @@ static bool done = false;
 const double twoRaisedTo32 = 4294967296.;
 
 
-Route::RouteASIO* theDriver = 0;
+route::RouteASIO* theDriver = 0;
 
 //------------------------------------------------------------------------------------------
 void getNanoSeconds (ASIOTimeStamp* ts)
@@ -18,7 +18,7 @@ void getNanoSeconds (ASIOTimeStamp* ts)
 }
 
 //------------------------------------------------------------------------------------------
-void Route::RouteASIO::timerOn ()
+void route::RouteASIO::timerOn ()
 {
 	theDriver = this;
 	DWORD asioId;
@@ -27,7 +27,7 @@ void Route::RouteASIO::timerOn ()
 }
 
 //------------------------------------------------------------------------------------------
-void Route::RouteASIO::timerOff ()
+void route::RouteASIO::timerOff ()
 {
 	done = true;
 	if (ASIOThreadHandle)
@@ -42,7 +42,7 @@ static DWORD __stdcall ASIOThread (void *param)
 	{
 		if (theDriver)
 		{
-			theDriver->bufferSwitch ();
+//			theDriver->bufferSwitch ();
 			Sleep (theDriver->getMilliSeconds ());
 		}
 		else

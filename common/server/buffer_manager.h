@@ -1,7 +1,7 @@
-#ifndef ROUTE_SUITE_BUFFERMANAGER_H
-#define ROUTE_SUITE_BUFFERMANAGER_H
+#ifndef ROUTE_SUITE_BUFFER_MANAGER_H
+#define ROUTE_SUITE_BUFFER_MANAGER_H
 
-#include "shared/SharedStructures.h"
+#include "shared/shared_structures.h"
 #include "types.h"
 #include "boost/interprocess/shared_memory_object.hpp"
 #include "boost/interprocess/mapped_region.hpp"
@@ -14,34 +14,34 @@ using boost::interprocess::open_only;
 using boost::interprocess::read_only;
 using boost::interprocess::read_write;
 
-namespace Route {
+namespace route {
 
-    class RouteServer;
+    class route_server;
 
-    class BufferManager {
+    class buffer_manager {
 
     private:
-        RouteServer* server;
+        route_server* server;
         shared_memory_object shm_buffers;
         mapped_region shm_buffers_region;
-        route_buffer* buffers;
+        buffer_info* buffers;
         bool activeBuffers[MAX_BUFFERS];
 
     public:
-        BufferManager(RouteServer* server);
-        ~BufferManager();
+        explicit buffer_manager(route_server* server);
+        ~buffer_manager();
 
         STATUS open();
         STATUS close();
 
-        route_buffer* getBuffer(int index);
+        buffer_info* get_buffer(int index);
 
-        STATUS freeBuffer(int buf);
-        STATUS allocateBuffer(int& buf);
+        STATUS free_buffer(int buf);
+        STATUS allocate_buffer(int& buf);
 
     };
 
 }
 
 
-#endif //ROUTE_SUITE_BUFFERMANAGER_H
+#endif //ROUTE_SUITE_BUFFER_MANAGER_H
