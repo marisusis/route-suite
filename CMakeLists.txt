@@ -6,7 +6,11 @@ add_compile_definitions(_WINDLL)
 # disable checking for cmake and conan compiler version match
 set( CONAN_DISABLE_CHECK_COMPILER 1)
 
-configure_file(cli-download/CMakeLists.txt.in cli-download/CMakeLists.txt)
+set(PA_USE_ASIO ON)
+
+configure_file(CMakeExternal/cli.cmake cli-download/CMakeLists.txt)
+
+configure_file(CMakeExternal/portaudio.cmake portaudio-download/CMakeLists.txt)
 
 execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/cli-download"
@@ -14,6 +18,21 @@ execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
 execute_process(COMMAND "${CMAKE_COMMAND}" --build .
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/cli-download"
         )
+
+execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/portaudio-download"
+        )
+execute_process(COMMAND "${CMAKE_COMMAND}" --build .
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/portaudio-download"
+        )
+
+add_subdirectory("${CMAKE_BINARY_DIR}/portaudio-src"
+        "${CMAKE_BINARY_DIR}/portaudio-build"
+        )
+
+include_directories("${PortAudio_SOURCE_DIR}/include")
+
+message("${PortAudio_SOURCE_DIR}")
 
 add_subdirectory("${CMAKE_BINARY_DIR}/cli-src")
 
@@ -59,6 +78,7 @@ set(IMGUI_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/imgui")
 #find_package(DirectX11)
 find_package(imgui CONFIG)
 find_package(argparse CONFIG)
+find_package(SndFile CONFIG)
 find_package(spdlog CONFIG)
 find_package(boost CONFIG)
 
@@ -119,6 +139,7 @@ target_include_directories(RouteCommon
 
 # examples
 add_subdirectory(examples/basic-client)
+add_subdirectory(examples/play_audio_file)
 
 # ASIO driver
 add_subdirectory(route-asio)
@@ -128,7 +149,8 @@ add_subdirectory(api)
 add_executable(RouteD routed.cpp)
 target_link_libraries(RouteD
         PRIVATE RouteCommon
-        PRIVATE cli)
+        PRIVATE cli
+        PRIVATE PortAudio)
 
 add_executable(TestGraphs test_graphs.cpp)
 target_link_libraries(TestGraphs
