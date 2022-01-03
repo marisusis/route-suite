@@ -192,7 +192,7 @@ namespace route {
 
             // get source buffer
             buffer_info* src = bufferManager.get_buffer(srcClient->outputBufferMap[srcPort.get_channel()]);
-            buffer_info* dest = bufferManager.get_buffer(srcClient->inputBufferMap[srcPort.get_channel()]);
+            buffer_info* dest = bufferManager.get_buffer(destClient->inputBufferMap[destPort.get_channel()]);
 
             // copy memory over
             memcpy(dest->buffer1, src->buffer1, server.get_server_info()->bufferSize * sizeof(float));
