@@ -9,7 +9,7 @@ int main() {
     spdlog::set_pattern("[%H:%M:%S:%e] [thread %t] %^[%l] %v%$");
 
     // create client
-    Route::RouteClient client("BasicClient");
+    route::RouteClient client("BasicClient");
 
     client.open();
 

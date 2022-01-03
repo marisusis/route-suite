@@ -1,7 +1,7 @@
 #include "PipeClient.h"
 #include "utils.h"
 
-namespace Route {
+namespace route {
 
     PipeClient::PipeClient() {
         LOG_CTX(PipeClient::new, "new PipeClient.");

@@ -26,7 +26,7 @@ enum {
 #include "combase.h"
 #include "iasiodrv.h"
 
-namespace Route {
+namespace route {
 
     class ASIODebugger;
     class ASIOClock;

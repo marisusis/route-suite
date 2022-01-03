@@ -5,7 +5,7 @@
 #include "Pipe.h"
 #include "PipeClient.h"
 
-namespace Route {
+namespace route {
     class PipeServer : public Pipe {
 
     public:

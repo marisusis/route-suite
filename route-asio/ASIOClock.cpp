@@ -13,16 +13,16 @@ const double twoRaisedTo32 = 4294967296.;
 
 using namespace std::chrono_literals;
 
-Route::ASIOClock::ASIOClock(RouteASIO *driver) : thread(this, "ASIOClock", true), driver(driver) {
+route::ASIOClock::ASIOClock(RouteASIO *driver) : thread(this, "ASIOClock", true), driver(driver) {
     DBG_CTX(ASIOClock::new, "");
 
 }
 
-Route::ASIOClock::~ASIOClock() {
+route::ASIOClock::~ASIOClock() {
     DBG_CTX(ASIOClock::~, "");
 }
 
-STATUS Route::ASIOClock::init() {
+STATUS route::ASIOClock::init() {
 
     const double sampleRate = driver->routeClient->getSampleRate();
     const double bufferSize = driver->routeClient->getBufferSize();
@@ -34,7 +34,7 @@ STATUS Route::ASIOClock::init() {
     return Runnable::init();
 }
 
-STATUS Route::ASIOClock::execute() {
+STATUS route::ASIOClock::execute() {
 
 //    auto until = lastTime + waitTime;
 
@@ -63,7 +63,7 @@ STATUS Route::ASIOClock::execute() {
     return STATUS_OK;
 }
 
-STATUS Route::ASIOClock::stop() {
+STATUS route::ASIOClock::stop() {
     LOG_CTX(ASIOClock::stop, "stopping clock...");
 
     // stop the clock thread
@@ -72,7 +72,7 @@ STATUS Route::ASIOClock::stop() {
     return STATUS_OK;
 }
 
-STATUS Route::ASIOClock::start() {
+STATUS route::ASIOClock::start() {
     LOG_CTX(ASIOClock::start, "starting clock...");
 
     // get the last time
@@ -84,7 +84,7 @@ STATUS Route::ASIOClock::start() {
     return STATUS_OK;
 }
 
-void Route::ASIOClock::latchTime(ASIOTimeStamp* timestamp) {
+void route::ASIOClock::latchTime(ASIOTimeStamp* timestamp) {
 
     // get current time in nanoseconds
     auto currentTime = std::chrono::high_resolution_clock::now();

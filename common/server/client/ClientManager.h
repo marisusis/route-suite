@@ -16,15 +16,15 @@ using boost::interprocess::open_only;
 using boost::interprocess::read_only;
 using boost::interprocess::read_write;
 
-namespace Route {
+namespace route {
 
-    class RouteServer;
+    class route_server;
 
     class ClientManager {
 
     private:
         std::map<int, Client*> clients;
-        RouteServer* server;
+        route_server* server;
         boolean activeRefs[MAX_CLIENTS];
         route_client* shmClients;
         shared_memory_object shm_clients;
@@ -34,7 +34,7 @@ namespace Route {
         STATUS allocateRef(int& ref);
 
     public:
-        ClientManager(RouteServer* server);
+        ClientManager(route_server* server);
         ~ClientManager();
 
         STATUS open();

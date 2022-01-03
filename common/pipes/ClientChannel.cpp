@@ -1,6 +1,6 @@
 #include "ClientChannel.h"
 
-namespace Route {
+namespace route {
 
     ClientChannel::ClientChannel() : thread(this, "ClientChannel") {
         DBG_CTX(ClientChannel::new, "creating client channel...");

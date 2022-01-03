@@ -1,7 +1,7 @@
 #include "NotifyClientChannel.h"
 #include "utils.h"
 
-namespace Route {
+namespace route {
 
     NotifyClientChannel::NotifyClientChannel() {
         DBG_CTX(NotifyClientChannel::new, "");

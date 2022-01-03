@@ -1,10 +1,10 @@
 #include "ClientManager.h"
 #include "utils.h"
-#include "server/RouteServer.h"
+#include "server/route_server.h"
 
-namespace Route {
+namespace route {
 
-    ClientManager::ClientManager(RouteServer *server) : server(server) {
+    ClientManager::ClientManager(route_server *server) : server(server) {
         DBG_CTX(ClientManager::new, "");
 
         // set all active refs to disabled
@@ -83,7 +83,7 @@ namespace Route {
         route_client *routeClient = &(shmClients[*ref]);
 
         // copy name
-        strcpy(routeClient->name, clientName.c_str());
+        memcpy(routeClient->name, clientName.c_str(), sizeof(char) * 256);
 
         // create info
         route_channel_info *inInfo = new route_channel_info();
@@ -106,16 +106,16 @@ namespace Route {
             routeClient->outputBufferMap[i] = outBuf;
 
             // set default values
-            strcpy(inInfo->name, format_string("[REF %d] Source %d @ %d", *ref, i + 1, routeClient->inputBufferMap[i]).c_str());
-            strcpy(outInfo->name, format_string("[REF %d] Sink %d @ %d", *ref, i + 1, routeClient->outputBufferMap[i]).c_str());
+            memcpy(inInfo->name, format_string("[REF %d] Source %d @ %d", *ref, i + 1, routeClient->inputBufferMap[i]).c_str(), sizeof(char) * 256);
+            memcpy(outInfo->name, format_string("[REF %d] Sink %d @ %d", *ref, i + 1, routeClient->outputBufferMap[i]).c_str(), sizeof(char) * 256);
 
             // copy the info to shm
             memcpy(&(routeClient->inputChannels[i]), inInfo, sizeof(route_channel_info));
             memcpy(&(routeClient->outputChannels[i]), outInfo, sizeof(route_channel_info));
 
             // register ports with the graph manager
-            server->getGraphManager()->add_port(inInfo->name, *ref, i, true);
-            server->getGraphManager()->add_port(outInfo->name, *ref, i, false);
+            server->get_graph_manager().add_port(inInfo->name, *ref, i, true);
+            server->get_graph_manager().add_port(outInfo->name, *ref, i, false);
         }
 
         // set default I/O latency
@@ -135,7 +135,7 @@ namespace Route {
         DBG_CTX(ClientManager::closeClient, "closing client [{}]...", ref);
 
         // check if ref exists
-        std::map<int, Client *>::iterator find = clients.find(ref);
+        auto find = clients.find(ref);
 
         if (find == clients.end()) {
             // no client found
@@ -157,8 +157,8 @@ namespace Route {
             server->getBufferManager()->freeBuffer(shmClient.outputBufferMap[i]);
 
             // remove ports
-            server->getGraphManager()->remove_port(ref, i, true);
-            server->getGraphManager()->remove_port(ref, i, false);
+            server->get_graph_manager().remove_port(ref, i, true);
+            server->get_graph_manager().remove_port(ref, i, false);
         }
 
         // free its refnum

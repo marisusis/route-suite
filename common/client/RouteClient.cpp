@@ -3,7 +3,7 @@
 #include "utils.h"
 #include "constants.h"
 
-namespace Route {
+namespace route {
 
     RouteClient::RouteClient(const std::string client_name) : clientName(client_name) {
         TRC_CTX(RouteClient::new, "");

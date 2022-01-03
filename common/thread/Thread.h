@@ -8,7 +8,7 @@
 #include <string>
 #include "utils.h"
 
-namespace Route {
+namespace route {
 
     typedef DWORD (WINAPI *ThreadCallback)(void* arg);
 

@@ -3,19 +3,19 @@
 //
 
 #include "RouteEngine.h"
-#include "server/RouteServer.h"
+#include "server/route_server.h"
 #include "utils.h"
 
-Route::RouteEngine::RouteEngine(Route::RouteServer *server) : server(server), clock(this) {
+route::RouteEngine::RouteEngine(route::route_server *server) : server(server), clock(this) {
     DBG_CTX(RouteEngine::new, "");
 }
 
 
-Route::RouteEngine::~RouteEngine() {
+route::RouteEngine::~RouteEngine() {
     DBG_CTX(RouteEngine::~, "");
 }
 
-STATUS Route::RouteEngine::open() {
+STATUS route::RouteEngine::open() {
     DBG_CTX(RouteEngine::open, "opening audio engine...");
 
     // open our clock
@@ -27,7 +27,7 @@ STATUS Route::RouteEngine::open() {
     return STATUS_OK;
 }
 
-STATUS Route::RouteEngine::close() {
+STATUS route::RouteEngine::close() {
     DBG_CTX(RouteEngine::close, "closing audio engine...");
 
     // close the clock
@@ -36,11 +36,11 @@ STATUS Route::RouteEngine::close() {
     return STATUS_OK;
 }
 
-STATUS Route::RouteEngine::tick() {
+STATUS route::RouteEngine::tick() {
 //    DBG_CTX(RouteEngine::tick,"");
 
     // process the graph
-    server->getGraphManager()->process();
+    server->get_graph_manager().process();
 
     return STATUS_OK;
 }

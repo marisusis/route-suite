@@ -10,6 +10,8 @@ add_library(RouteASIO SHARED
         RouteASIO.cpp
         RouteASIO.h ASIOClock.cpp ASIOClock.h)
 
+target_compile_options(RouteASIO PRIVATE /Zc:strictStrings-)
+
 target_compile_definitions(RouteASIO PRIVATE _WINDLL)
 
 target_link_libraries(RouteASIO

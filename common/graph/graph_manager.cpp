@@ -2,11 +2,11 @@
 #include "utils.h"
 #include <algorithm>
 #include <forward_list>
-#include "server/RouteServer.h"
+#include "server/route_server.h"
 #include "boost/optional.hpp"
 
-namespace Route {
-    graph_manager::graph_manager(RouteServer *server) : server(server) {
+namespace route {
+    graph_manager::graph_manager(route_server* server) : server(*server) {
         LOG_CTX(graph_manager::new, "");
 
         // initialize graph
@@ -93,33 +93,24 @@ namespace Route {
         if (!found.has_value()) return STATUS_ERROR;
 
         // get the port
-        auto port = found.value();
+        const port& the_port = found.value();
 
         // list of elements to remove
         std::forward_list<std::pair<int, int>> to_remove;
 
-//        // get our ref to test
-//        const int test_ref = port.get_ref();
-//
-//        // remove connections that use the port
-//        auto conn = std::begin(connections);
-//        while (conn != std::end(connections)) {
-//
-//            // check the connections
-//            auto par = *conn;
-//            if (par.first == test_ref || par.second == test_ref) {
-//                // add to list of pairs to remove
-//                to_remove.push_front(par);
-//            }
-//
-//            // move to next item
-//            conn++;
-//        }
-//
-//        // remove all the connections
-//        for (auto rem : to_remove) {
-//            connections.remove(rem);
-//        }
+
+        // remove all connections that contain the port
+        std::erase_if(connections, [the_port](const connection& item){
+            return (item.get_source() == the_port || item.get_destination() == the_port);
+        });
+
+        const int port_ref = the_port.get_ref();
+
+        // free the port's ref number
+        free_port(port_ref);
+
+        // remove port from the map
+        ports.erase(port_ref);
 
         return STATUS_OK;
     }
@@ -142,6 +133,7 @@ namespace Route {
     }
 
     STATUS graph_manager::connect_ports(int a, int b) {
+        LOG_CTX(graph_manager::connect_ports, "attempting to connect {} --> {}", a, b);
 
         // get ports
         auto optPortA = get_port(a);
@@ -151,10 +143,25 @@ namespace Route {
         if (!optPortA.has_value()) ERR_CTX(graph_manager::connect_ports, "port {} doesn't exist!", a);
         if (!optPortB.has_value()) ERR_CTX(graph_manager::connect_ports, "port {} doesn't exist!", b);
 
+        // get ports
+        const port& portA = optPortA.value();
+        const port& portB = optPortB.value();
+
         // create connection
         connection conn(optPortA.value(), optPortB.value());
 
         // check if connection exists
+        if (connection_exists(portA, portB)) {
+            ERR_CTX(graph_manager::connect_ports, "connection [{}] --> [{}] already exists!", portA.get_name(), portB.get_name());
+            return STATUS_ERROR;
+        }
+
+        // add the connection
+        connections.push_back(conn);
+
+        LOG_CTX(graph_manager::connect_ports, "[{}] --> [{}]", portA.get_name(), portB.get_name());
+
+
 
         return STATUS_OK;
     }
@@ -163,14 +170,14 @@ namespace Route {
         return connections;
     }
 
-    std::list<port> graph_manager::getPorts() const {
-        return portList;
+    std::map<int, port> graph_manager::get_ports() const {
+        return ports;
     }
 
     STATUS graph_manager::process() {
         // get managers
-        BufferManager* bufferManager = server->getBufferManager();
-        ClientManager* clientManager = server->getClientManager();
+        BufferManager* bufferManager = server.getBufferManager();
+        ClientManager* clientManager = server.getClientManager();
 
         // process each connection
         for (auto conn : connections) {
@@ -184,10 +191,12 @@ namespace Route {
             route_client* destClient = clientManager->getClientInfo(destPort.get_client_ref());
 
             // get source buffer
-            route_buffer* src = bufferManager->getBuffer(srcClient->inputBufferMap[srcPort.get_channel()]);
+            route_buffer* src = bufferManager->getBuffer(srcClient->outputBufferMap[srcPort.get_channel()]);
             route_buffer* dest = bufferManager->getBuffer(srcClient->inputBufferMap[srcPort.get_channel()]);
 
             // copy memory over
+            memcpy(dest->buffer1, src->buffer1, server.getServerInfo()->bufferSize * sizeof(float));
+            memcpy(dest->buffer2, src->buffer2, server.getServerInfo()->bufferSize * sizeof(float));
 
         }
 
@@ -231,11 +240,11 @@ namespace Route {
     }
 
 
-    bool graph_manager::connection_exists(port &a, port &b) {
+    bool graph_manager::connection_exists(const port& a, const port& b) {
         return find_connection(a, b).has_value();
     }
 
-    std::optional<const connection> graph_manager::find_connection(port& src, port& dest) {
+    std::optional<const connection> graph_manager::find_connection(const port& src, const port& dest) {
         // search for the connection
         auto findIt = std::find_if(connections.begin(), connections.end(), [=](const connection& conn) {
             return (conn.get_source() == src) && (conn.get_destination() == dest);

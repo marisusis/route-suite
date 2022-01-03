@@ -4,19 +4,19 @@
 #include "types.h"
 #include "PipeClient.h"
 
-namespace Route {
+namespace route {
 
-    class RouteServer;
+    class route_server;
     class ChannelConnectionThread;
 
     class RequestDecoder {
 
     private:
-        RouteServer* server;
+        route_server* server;
         ChannelConnectionThread* channelThread;
 
     public:
-        RequestDecoder(RouteServer* the_server, ChannelConnectionThread* channel_thread);
+        RequestDecoder(route_server* the_server, ChannelConnectionThread* channel_thread);
         ~RequestDecoder();
 
         STATUS handleRequest(PipeClient* pipe, int type);

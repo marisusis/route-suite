@@ -4,11 +4,11 @@
 #include "cli/clilocalsession.h"
 #include "cli/filehistorystorage.h"
 #include "cli/loopscheduler.h"
-#include "common/server/RouteServer.h"
+#include "common/server/route_server.h"
 #include <chrono>
 #include <thread>
 
-Route::RouteServer* server;
+route::route_server* server;
 
 BOOL WINAPI CtrlHandler(DWORD ctrlType) {
 
@@ -83,7 +83,7 @@ int main() {
             [](std::ostream& out, int a, int b) {
 
                 // attempt to connect two ports
-                server->getGraphManager()->connect_ports(a, b);
+                server->get_graph_manager().connect_ports(a, b);
 
             }, "connect two ports");
 
@@ -95,9 +95,9 @@ int main() {
                     return;
                 }
 
-                auto connections = server->getGraphManager()->get_connections();
+                auto connections = server->get_graph_manager().get_connections();
 
-                std::for_each(connections.begin(), connections.end(), [](const Route::connection& item) {
+                std::for_each(connections.begin(), connections.end(), [](const route::connection& item) {
                     spdlog::info("[{}] --> [{}]", item.get_source().get_name(), item.get_destination().get_name());
                 });
 
@@ -138,16 +138,16 @@ int main() {
         }
 
         // get client manager from server
-        Route::ClientManager* clientManager = server->getClientManager();
+        route::ClientManager* clientManager = server->getClientManager();
 
         // get map of clients
-        std::map<int, Route::Client*>* clients = clientManager->getClients();
+        std::map<int, route::Client*>* clients = clientManager->getClients();
 
         // iterate through all clients
         for (auto& client : *clients) {
 
             // get client info
-            Route::route_client* info = clientManager->getClientInfo(client.first);
+            route::route_client* info = clientManager->getClientInfo(client.first);
 
             spdlog::info("found client [{0}/{1}] ", client.first, info->name);
 
@@ -162,10 +162,10 @@ int main() {
             return;
         }
 
-        auto ports = server->getGraphManager()->getPorts();
+        auto ports = server->get_graph_manager().get_ports();
 
-        std::for_each(ports.begin(), ports.end(), [](Route::port p) {
-            spdlog::info("[{}]: {}", p.get_ref(), p.get_name());
+        std::for_each(ports.begin(), ports.end(), [](const std::pair<int, route::port>& item) {
+            spdlog::info("[{}]: {}", item.second.get_ref(), item.second.get_name());
         });
 
     }, "list all registered ports");
@@ -214,7 +214,7 @@ int main() {
     }
 
     // create route server instance
-    server = new Route::RouteServer();
+    server = new route::route_server();
 
     // start the scheduler
     scheduler.Run();

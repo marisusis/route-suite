@@ -1,5 +1,5 @@
-#ifndef ROUTE_SUITE_ROUTESERVER_H
-#define ROUTE_SUITE_ROUTESERVER_H
+#ifndef ROUTE_SUITE_ROUTE_SERVER_H
+#define ROUTE_SUITE_ROUTE_SERVER_H
 
 #include <engine/RouteEngine.h>
 #include <graph/graph_manager.h>
@@ -19,9 +19,9 @@ using boost::interprocess::read_only;
 using boost::interprocess::read_write;
 
 
-namespace Route {
+namespace route  {
 
-    class RouteServer {
+    class route_server {
 
     private:
         ServerChannel requestChannel;
@@ -30,7 +30,6 @@ namespace Route {
         BufferManager bufferManager;
         graph_manager graphManager;
         RunState serverState = RunState::IDLE;
-        int currentReferenceNumber = 1;
         shared_memory_object shm_info;
         mapped_region shm_info_region;
         route_server_info* info;
@@ -38,8 +37,8 @@ namespace Route {
         STATUS updateServerState(RunState newState);
 
     public:
-        RouteServer();
-        ~RouteServer();
+        route_server();
+        ~route_server();
 
         STATUS open();
         STATUS close();
@@ -50,7 +49,7 @@ namespace Route {
         ClientManager* getClientManager();
         BufferManager* getBufferManager();
         RouteEngine* getAudioEngine();
-        graph_manager* getGraphManager();
+        graph_manager& get_graph_manager();
 
         RunState getState() const;
 
@@ -63,4 +62,4 @@ namespace Route {
 }
 
 
-#endif //ROUTE_SUITE_ROUTESERVER_H
+#endif //ROUTE_SUITE_ROUTE_SERVER_H

@@ -8,18 +8,18 @@
 #include "types.h"
 #include "AudioClock.h"
 
-namespace Route {
+namespace route {
 
-    class RouteServer;
+    class route_server;
 
     class RouteEngine {
 
     private:
-        RouteServer* server;
+        route_server* server;
         AudioClock clock;
 
     public:
-        RouteEngine(RouteServer* server);
+        RouteEngine(route_server* server);
         ~RouteEngine();
 
         STATUS open();

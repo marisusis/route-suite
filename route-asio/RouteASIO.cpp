@@ -19,8 +19,8 @@
 	search string !!! can be found...
 */
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <string>
 #include "RouteASIO.h"
 #include "utils.h"
 #include "spdlog/spdlog.h"
@@ -53,20 +53,20 @@ static const double twoRaisedTo32Reciprocal = 1. / twoRaisedTo32;
 CLSID IID_ASIO_DRIVER = {0x12345678, 0xd565, 0x11d2, {0x85, 0x4f, 0x0, 0xa0, 0xc9, 0x9f, 0x5d, 0x19}};
 
 CFactoryTemplate g_Templates[1] = {
-        {L"ASIOSAMPLE", &IID_ASIO_DRIVER, Route::RouteASIO::CreateInstance}
+        {L"ASIOSAMPLE", &IID_ASIO_DRIVER, route::RouteASIO::CreateInstance}
 };
 
 int g_cTemplates = sizeof(g_Templates) / sizeof(g_Templates[0]);
 
-extern LONG RegisterAsioDriver(CLSID, char*, char*, char*, char*);
+extern LONG RegisterAsioDriver(CLSID clsid, const char *szdllname, const char *szregname, const char *szasiodesc, const char *szthreadmodel);
 
-extern LONG UnregisterAsioDriver(CLSID, char*, char*);
+extern LONG UnregisterAsioDriver(CLSID clsid, const char *szdllname, const char *szregname);
 
 HRESULT _stdcall DllRegisterServer() {
     LONG rc;
     char errstr[128];
 
-    rc = RegisterAsioDriver(IID_ASIO_DRIVER, "RouteASIO.dll", REG_NAME, "Route ASIO", "Apartment");
+    rc = RegisterAsioDriver(IID_ASIO_DRIVER, "RouteASIO.dll", REG_NAME, "route ASIO", "Apartment");
 
     if (rc) {
         memset(errstr, 0, 128);
@@ -94,7 +94,16 @@ HRESULT _stdcall DllUnregisterServer() {
     return S_OK;
 }
 
-namespace Route {
+namespace route {
+
+    static const char* fuck_you = "ASIOSAMPLE";
+
+    static char* generate_shit() {
+        char* str = reinterpret_cast<char*>(malloc(sizeof(char) * 10));
+        memcpy(str, fuck_you, sizeof(char) * 10);
+        return str;
+    }
+
 
     CUnknown* RouteASIO::CreateInstance(LPUNKNOWN pUnk, HRESULT* phr) {
         return (CUnknown*) new RouteASIO(pUnk, phr);
@@ -107,7 +116,7 @@ namespace Route {
         return CUnknown::NonDelegatingQueryInterface(riid, ppv);
     }
 
-    RouteASIO::RouteASIO(LPUNKNOWN pUnk, HRESULT* phr) : CUnknown("ASIOSAMPLE", pUnk, phr) {
+    RouteASIO::RouteASIO(LPUNKNOWN pUnk, HRESULT* phr) : CUnknown(generate_shit(), pUnk, phr) {
         // configure logger
         spdlog::set_level(spdlog::level::debug);
         spdlog::set_pattern("[%H:%M:%S:%e] [thread %t] %^[%l] %v%$");
@@ -153,7 +162,7 @@ namespace Route {
     }
 
     void RouteASIO::getDriverName(char* name) {
-        strcpy(name, "Route ASIO");
+        strcpy(name, "route ASIO");
     }
 
 

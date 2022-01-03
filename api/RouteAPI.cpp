@@ -9,8 +9,8 @@
 
 namespace RouteAPI {
 
-    APIClient::APIClient(const char* name) {
-        client = new Route::RouteClient(name);
+    APIClient::APIClient(const char *name) {
+        client = new route::RouteClient(name);
     }
 
     void APIClient::open() {
@@ -25,19 +25,19 @@ namespace RouteAPI {
         return client->getRef();
     }
 
-    EXPORT APIClient* route_create_client(const char* name) {
+    EXPORT APIClient *route_create_client(const char *name) {
         return new APIClient(name);
     }
 
-    EXPORT void route_open_client(APIClient* client) {
+    EXPORT void route_open_client(APIClient *client) {
         client->open();
     }
 
-    EXPORT void route_close_client(APIClient* client) {
+    EXPORT void route_close_client(APIClient *client) {
         client->close();
     }
 
-    EXPORT int route_get_ref(APIClient* client) {
+    EXPORT int route_get_ref(APIClient *client) {
         return client->getRef();
     }
 

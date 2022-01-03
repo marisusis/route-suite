@@ -7,15 +7,15 @@
 #include "PipeClient.h"
 #include "RequestDecoder.h"
 
-namespace Route {
+namespace route {
 
-    class RouteServer;
+    class route_server;
 
     class ChannelConnectionThread : public Runnable {
 
     private:
         PipeClient* pipe;
-        RouteServer* server;
+        route_server* server;
         RequestDecoder* decoder;
         Thread thread;
 
@@ -25,7 +25,7 @@ namespace Route {
         ChannelConnectionThread(PipeClient* pipe);
         ~ChannelConnectionThread();
 
-        STATUS open(RouteServer* the_server);
+        STATUS open(route_server* the_server);
         STATUS close();
 
         STATUS init() final;
@@ -42,14 +42,14 @@ namespace Route {
         char serverName[SERVER_NAME_LENGTH];
         std::list<ChannelConnectionThread*> channelConnections;
         PipeServer requestPipe;
-        RouteServer* server;
+        route_server* server;
         Thread thread;
 
     public:
         ServerChannel();
         ~ServerChannel();
 
-        STATUS open(RouteServer* the_server, const char* server_name);
+        STATUS open(route_server* the_server, const char* server_name);
         STATUS close();
         STATUS start();
         STATUS stop();

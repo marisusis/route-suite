@@ -1,12 +1,12 @@
 #include "pipes/RequestDecoder.h"
-#include "server/RouteServer.h"
+#include "server/route_server.h"
 #include "utils.h"
 #include "pipes/PipeRequest.h"
 #include "pipes/ServerChannel.h"
 
-namespace Route {
+namespace route {
 
-    RequestDecoder::RequestDecoder(RouteServer* the_server, ChannelConnectionThread* channel_thread) : server(the_server), channelThread(channel_thread) {
+    RequestDecoder::RequestDecoder(route_server* the_server, ChannelConnectionThread* channel_thread) : server(the_server), channelThread(channel_thread) {
         DBG_CTX(RequestDecoder::new, "");
     }
 

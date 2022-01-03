@@ -14,22 +14,22 @@
 #include <set>
 #include <unordered_set>
 
-namespace Route {
+namespace route {
 
-    class RouteServer;
+    class route_server;
 
     class graph_manager {
 
 
     private:
-        RouteServer* server;
+        route_server& server;
         bool activePorts[MAX_PORTS];
         std::map<int, port> ports;
         std::list<port> portList;
         std::list<connection> connections;
 
     public:
-        graph_manager(RouteServer* server);
+        explicit graph_manager(route_server* server);
         ~graph_manager();
 
         STATUS allocate_port(int &id);
@@ -45,18 +45,17 @@ namespace Route {
         std::optional<const port> find_port(int client_ref, int channel, bool input);
 
         bool port_exists(int client_ref, int channel, bool input);
-        bool port_exists(port& port);
         bool port_exists(int port_ref);
 
-        bool connection_exists(port& a, port& b);
+        bool connection_exists(const port& a, const port& b);
 
-        std::optional<const connection> find_connection(port& src, port& dest);
+        std::optional<const connection> find_connection(const port& src, const port& dest);
 
         std::optional<const port> get_port(int port_ref);
 
         [[nodiscard]] std::list<connection> get_connections() const;
 
-        std::list<port> getPorts() const;
+        [[nodiscard]] std::map<int, port> get_ports() const;
 
         STATUS process();
 

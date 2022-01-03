@@ -81,8 +81,8 @@ add_library(RouteCommon STATIC
             common/thread/Event.cpp
             common/thread/Event.h
             common/pipes/PipeRequest.h
-            common/server/RouteServer.cpp
-            common/server/RouteServer.h
+        common/server/route_server.cpp
+        common/server/route_server.h
             common/pipes/ClientChannel.cpp
             common/pipes/ClientChannel.h
             common/pipes/RequestDecoder.cpp

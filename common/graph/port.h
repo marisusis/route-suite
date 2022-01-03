@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace Route {
+namespace route {
 
     enum PortType {
         INPUT,
@@ -21,7 +21,7 @@ namespace Route {
 
     public:
         port(int ref, PortType portType, int clientRef, int channel);
-        port(std::string name, int ref, PortType portType, int clientRef, int channel);
+        port(std::string& name, int ref, PortType portType, int clientRef, int channel);
 
         [[nodiscard]] int get_ref() const;
         [[nodiscard]] int get_client_ref() const;
@@ -38,13 +38,13 @@ namespace Route {
     class connection {
 
     private:
-        port& src;
-        port& dest;
+        const port src;
+        const port dest;
 
     public:
-        connection(port src, port dest);
-        [[nodiscard]] port& get_source() const;
-        [[nodiscard]] port& get_destination() const;
+        connection(const port src, const port dest);
+        [[nodiscard]] const port& get_source() const;
+        [[nodiscard]] const port& get_destination() const;
 
         bool operator==(const connection &rhs) const;
 

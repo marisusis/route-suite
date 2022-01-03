@@ -6,62 +6,62 @@
 
 #include <utility>
 
-Route::port::port(int ref, PortType portType, int clientRef, int channel)
+route::port::port(int ref, PortType portType, int clientRef, int channel)
         : ref(ref), portType(portType), clientRef(clientRef), channel(channel) {}
 
 
-Route::port::port(std::string name, int ref, Route::PortType portType, int clientRef, int channel)
-        : ref(ref), portType(portType), clientRef(clientRef), channel(channel), port_name(name) {
+route::port::port(std::string& name, int ref, route::PortType portType, int clientRef, int channel)
+        : ref(ref), portType(portType), clientRef(clientRef), channel(channel), port_name(std::move(name)) {
 
 }
 
-bool Route::port::operator==(const Route::port &rhs) const {
+bool route::port::operator==(const route::port &rhs) const {
     return portType == rhs.portType &&
            clientRef == rhs.clientRef &&
            channel == rhs.channel;
 }
 
-bool Route::port::operator!=(const Route::port &rhs) const {
+bool route::port::operator!=(const route::port &rhs) const {
     return !(rhs == *this);
 }
 
-int Route::port::get_ref() const {
+int route::port::get_ref() const {
     return ref;
 }
 
-int Route::port::get_channel() const {
+int route::port::get_channel() const {
     return channel;
 }
 
-int Route::port::get_client_ref() const {
+int route::port::get_client_ref() const {
     return clientRef;
 }
 
-bool Route::port::is_input() const {
+bool route::port::is_input() const {
     return (portType == INPUT);
 }
 
-std::string Route::port::get_name() const {
+std::string route::port::get_name() const {
     return port_name;
 }
 
-Route::connection::connection(port src, port dest) : src(src), dest(dest) {
+route::connection::connection(const port src, const port dest) : src(src), dest(dest) {
 
 }
 
-Route::port &Route::connection::get_source() const {
+const route::port &route::connection::get_source() const {
     return src;
 }
 
-Route::port &Route::connection::get_destination() const {
+const route::port &route::connection::get_destination() const {
     return dest;
 }
 
-bool Route::connection::operator==(const Route::connection &rhs) const {
+bool route::connection::operator==(const route::connection &rhs) const {
     return src == rhs.src &&
            dest == rhs.dest;
 }
 
-bool Route::connection::operator!=(const Route::connection &rhs) const {
+bool route::connection::operator!=(const route::connection &rhs) const {
     return !(rhs == *this);
 }

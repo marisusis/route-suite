@@ -1,10 +1,10 @@
 #include "BufferManager.h"
 #include "utils.h"
-#include "RouteServer.h"
+#include "route_server.h"
 
-namespace Route {
+namespace route {
 
-    BufferManager::BufferManager(RouteServer* server) : server(server) {
+    BufferManager::BufferManager(route_server* server) : server(server) {
         DBG_CTX(BufferManager::new, "");
 
         // set all active refs to disabled

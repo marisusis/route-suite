@@ -5,7 +5,7 @@
 #include "spdlog/spdlog.h"
 #include "common/graph/graph_manager.h"
 
-using namespace Route;
+using namespace route;
 
 int main() {
 

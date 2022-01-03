@@ -5,7 +5,7 @@
 #include <types.h>
 #include <thread>
 
-namespace Route {
+namespace route {
 
     class Event {
 

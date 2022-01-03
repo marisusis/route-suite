@@ -1,7 +1,7 @@
 #include "Thread.h"
 #include "utils.h"
 
-namespace Route {
+namespace route {
 
     DWORD WINAPI Thread::ThreadHandler(void* arg) {
 

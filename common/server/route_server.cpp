@@ -1,26 +1,26 @@
 #include "shared/SharedStructures.h"
 #include "utils.h"
-#include "RouteServer.h"
+#include "route_server.h"
 
-namespace Route {
+namespace route {
 
-    RouteServer::RouteServer() : clientManager(this), bufferManager(this), audioEngine(this), graphManager(this) {
-        LOG_CTX(RouteServer::new, "");
+    route_server::route_server() : clientManager(this), bufferManager(this), audioEngine(this), graphManager(this) {
+        LOG_CTX(RouteServerRouteServer::new, "");
 
         // remove shared memory objects in case they exist
         shared_memory_object::remove(ROUTE_SHM_INFO);
         shared_memory_object::remove(ROUTE_SHM_CLIENTS);
 
         // created shared memory object
-        DBG_CTX(RouteServer::new, "creating shared memory...");
+        DBG_CTX(RouteServerRouteServer::new, "creating shared memory...");
         shm_info = shared_memory_object(open_or_create, ROUTE_SHM_INFO, read_write);
 
         // truncate to the size of datatypes
-        DBG_CTX(RouteServer::new, "truncating shared memory to {0} bytes...", sizeof(route_server_info));
+        DBG_CTX(route_server::new, "truncating shared memory to {0} bytes...", sizeof(route_server_info));
         shm_info.truncate(sizeof(route_server_info));
 
         // create the mapped regions
-        DBG_CTX(RouteServer::new, "creating mapped regions");
+        DBG_CTX(route_server::new, "creating mapped regions");
         shm_info_region = mapped_region(shm_info,
                                         read_write,
                                         0,
@@ -33,21 +33,21 @@ namespace Route {
 
         // default sample rate and buffer size
         info->sampleRate = 44100;
-        info->bufferSize = 1024;
+        info->bufferSize = 256;
         info->channelCount = MAX_CHANNELS;
     }
 
-    RouteServer::~RouteServer() {
-        LOG_CTX(RouteServer::~, "");
+    route_server::~route_server() {
+        LOG_CTX(route_server::~, "");
 
         // remove shared memory object
-        DBG_CTX(RouteServer::~, "destroying shared memory [{0}]", ROUTE_SHM_INFO);
+        DBG_CTX(route_server::~, "destroying shared memory [{0}]", ROUTE_SHM_INFO);
         shared_memory_object::remove(ROUTE_SHM_INFO);
 
     }
 
-    STATUS RouteServer::open() {
-        LOG_CTX(RouteServer::open, "opening server...");
+    STATUS route_server::open() {
+        LOG_CTX(route_server::open, "opening server...");
 
         // open the request channel
         requestChannel.open(this, SERVER_NAME);
@@ -64,13 +64,13 @@ namespace Route {
         return STATUS_OK;
     }
 
-    STATUS RouteServer::tempAction(const std::string& action) {
-        LOG_CTX(RouteServer::tempAction, "A wild Action has appeared! It's name is {}.", action);
+    STATUS route_server::tempAction(const std::string& action) {
+        LOG_CTX(route_server::tempAction, "A wild Action has appeared! It's name is {}.", action);
         return STATUS_OK;
     }
 
-    STATUS RouteServer::close() {
-        LOG_CTX(RouteServer::close, "closing server...");
+    STATUS route_server::close() {
+        LOG_CTX(route_server::close, "closing server...");
 
         // stop server if running
         if (this->serverState == RunState::RUNNING) this->stop();
@@ -90,8 +90,8 @@ namespace Route {
         return STATUS_OK;
     }
 
-    STATUS RouteServer::start() {
-        LOG_CTX(RouteServer::start, "starting server...");
+    STATUS route_server::start() {
+        LOG_CTX(route_server::start, "starting server...");
 
         // set state to starting
         updateServerState(RunState::STARTING);
@@ -105,8 +105,8 @@ namespace Route {
         return ret;
     }
 
-    STATUS RouteServer::stop() {
-        LOG_CTX(RouteServer::stop, "stopping server...");
+    STATUS route_server::stop() {
+        LOG_CTX(route_server::stop, "stopping server...");
 
         // set state to stopping
         updateServerState(RunState::STOPPING);
@@ -122,36 +122,36 @@ namespace Route {
         return ret;
     }
 
-    ClientManager* RouteServer::getClientManager() {
+    ClientManager* route_server::getClientManager() {
         return &clientManager;
     }
 
-    BufferManager* RouteServer::getBufferManager() {
+    BufferManager* route_server::getBufferManager() {
         return &bufferManager;
     }
 
-    RouteEngine* RouteServer::getAudioEngine() {
+    RouteEngine* route_server::getAudioEngine() {
         return &audioEngine;
     }
 
-    route_server_info* RouteServer::getServerInfo() {
+    route_server_info* route_server::getServerInfo() {
         return info;
     }
 
-    STATUS RouteServer::updateServerState(RunState newState) {
-        DBG_CTX(RouteServer::updateServerState, "updating server state {0}->{1}");
+    STATUS route_server::updateServerState(RunState newState) {
+        DBG_CTX(route_server::updateServerState, "updating server state {0}->{1}");
 
         serverState = newState;
 
         return STATUS_OK;
     }
 
-    RunState RouteServer::getState() const {
+    RunState route_server::getState() const {
         return serverState;
     }
 
-    graph_manager* RouteServer::getGraphManager() {
-        return &graphManager;
+    graph_manager& route_server::get_graph_manager() {
+        return graphManager;
     }
 
 }

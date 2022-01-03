@@ -14,21 +14,21 @@ using boost::interprocess::open_only;
 using boost::interprocess::read_only;
 using boost::interprocess::read_write;
 
-namespace Route {
+namespace route {
 
-    class RouteServer;
+    class route_server;
 
     class BufferManager {
 
     private:
-        RouteServer* server;
+        route_server* server;
         shared_memory_object shm_buffers;
         mapped_region shm_buffers_region;
         route_buffer* buffers;
         bool activeBuffers[MAX_BUFFERS];
 
     public:
-        BufferManager(RouteServer* server);
+        BufferManager(route_server* server);
         ~BufferManager();
 
         STATUS open();

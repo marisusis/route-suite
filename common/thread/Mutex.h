@@ -1,7 +1,7 @@
 #ifndef ROUTE_SUITE_MUTEX_H
 #define ROUTE_SUITE_MUTEX_H
 
-namespace Route {
+namespace route {
 
     class Mutex {
 

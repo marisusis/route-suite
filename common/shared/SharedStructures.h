@@ -7,7 +7,7 @@
 
 #include "constants.h"
 
-namespace Route {
+namespace route {
 
     struct route_server_info {
         char name[SERVER_NAME_LENGTH];
