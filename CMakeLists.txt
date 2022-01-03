@@ -93,15 +93,15 @@ add_library(RouteCommon STATIC
         common/client/route_client.cpp
         common/client/route_client.h
             common/utils.cpp
-            common/server/client/ClientManager.cpp
-            common/server/client/ClientManager.h
+        common/server/client/client_manager.cpp
+        common/server/client/client_manager.h
             common/server/client/Client.cpp
             common/server/client/Client.h
             common/pipes/NotifyClientChannel.cpp
             common/pipes/NotifyClientChannel.h
             common/shared/SharedStructures.h
-            common/server/BufferManager.cpp
-            common/server/BufferManager.h
+        common/server/buffer_manager.cpp
+        common/server/buffer_manager.h
         common/engine/route_engine.cpp
         common/engine/route_engine.h
         common/engine/audio_clock.cpp

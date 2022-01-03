@@ -22,7 +22,7 @@ namespace RouteAPI {
     }
 
     int APIClient::getRef() {
-        return client->getRef();
+        return client->get_ref();
     }
 
     EXPORT APIClient *route_create_client(const char *name) {

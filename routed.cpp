@@ -6,7 +6,6 @@
 #include "cli/loopscheduler.h"
 #include "common/server/route_server.h"
 #include <chrono>
-#include <thread>
 
 route::route_server* server;
 
@@ -54,7 +53,7 @@ int main() {
     rootMenu->Insert(
             "stop",
             [](std::ostream& out) {
-                switch (server->getState()) {
+                switch (server->get_state()) {
 
                     case IDLE:
                         spdlog::error("server is not running!");
@@ -90,7 +89,7 @@ int main() {
     rootMenu->Insert(
             "listConnections",
             [](std::ostream& out) {
-                if (server->getState() != RUNNING) {
+                if (server->get_state() != RUNNING) {
                     spdlog::error("server is not running!");
                     return;
                 }
@@ -106,7 +105,7 @@ int main() {
     rootMenu->Insert(
             "start",
             [](std::ostream& out) {
-                switch (server->getState()) {
+                switch (server->get_state()) {
 
                     case RUNNING:
                         spdlog::error("server is running!");
@@ -132,22 +131,22 @@ int main() {
 
     rootMenu->Insert("listClients", [](std::ostream& out){
 
-        if (server->getState() != RUNNING) {
+        if (server->get_state() != RUNNING) {
             spdlog::error("server is not running!");
             return;
         }
 
         // get client manager from server
-        route::ClientManager* clientManager = server->getClientManager();
+        route::client_manager& clientManager = server->get_client_manager();
 
         // get map of clients
-        std::map<int, route::Client*>* clients = clientManager->getClients();
+        std::map<int, route::Client*>* clients = clientManager.getClients();
 
         // iterate through all clients
         for (auto& client : *clients) {
 
             // get client info
-            route::client_info* info = clientManager->getClientInfo(client.first);
+            route::client_info* info = clientManager.get_client_info(client.first);
 
             spdlog::info("found client [{0}/{1}] ", client.first, info->name);
 
@@ -157,7 +156,7 @@ int main() {
 
     rootMenu->Insert("listPorts", [](std::ostream& out){
 
-        if (server->getState() != RUNNING) {
+        if (server->get_state() != RUNNING) {
             spdlog::error("server is not running!");
             return;
         }

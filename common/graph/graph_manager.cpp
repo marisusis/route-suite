@@ -176,27 +176,27 @@ namespace route {
 
     STATUS graph_manager::process() {
         // get managers
-        BufferManager* bufferManager = server.getBufferManager();
-        ClientManager* clientManager = server.getClientManager();
+        buffer_manager& bufferManager = server.get_buffer_manager();
+        client_manager& clientManager = server.get_client_manager();
 
         // process each connection
-        for (auto conn : connections) {
+        for (const auto& conn : connections) {
 
             // get source and dest ports
             const port& srcPort = conn.get_source();
             const port& destPort = conn.get_destination();
 
             // get client info
-            client_info* srcClient = clientManager->getClientInfo(srcPort.get_client_ref());
-            client_info* destClient = clientManager->getClientInfo(destPort.get_client_ref());
+            client_info* srcClient = clientManager.get_client_info(srcPort.get_client_ref());
+            client_info* destClient = clientManager.get_client_info(destPort.get_client_ref());
 
             // get source buffer
-            route_buffer* src = bufferManager->getBuffer(srcClient->outputBufferMap[srcPort.get_channel()]);
-            route_buffer* dest = bufferManager->getBuffer(srcClient->inputBufferMap[srcPort.get_channel()]);
+            buffer_info* src = bufferManager.get_buffer(srcClient->outputBufferMap[srcPort.get_channel()]);
+            buffer_info* dest = bufferManager.get_buffer(srcClient->inputBufferMap[srcPort.get_channel()]);
 
             // copy memory over
-            memcpy(dest->buffer1, src->buffer1, server.getServerInfo()->bufferSize * sizeof(float));
-            memcpy(dest->buffer2, src->buffer2, server.getServerInfo()->bufferSize * sizeof(float));
+            memcpy(dest->buffer1, src->buffer1, server.get_server_info()->bufferSize * sizeof(float));
+            memcpy(dest->buffer2, src->buffer2, server.get_server_info()->bufferSize * sizeof(float));
 
         }
 

@@ -24,8 +24,8 @@ route::ASIOClock::~ASIOClock() {
 
 STATUS route::ASIOClock::init() {
 
-    const double sampleRate = driver->routeClient->getSampleRate();
-    const double bufferSize = driver->routeClient->getBufferSize();
+    const double sampleRate = driver->routeClient->get_sample_rate();
+    const double bufferSize = driver->routeClient->get_buffer_size();
 
     waitTime = std::chrono::duration<double>(bufferSize/sampleRate);
 

@@ -12,7 +12,7 @@ namespace route {
     class RequestDecoder {
 
     private:
-        route_server* server;
+        route_server& server;
         ChannelConnectionThread* channelThread;
 
     public:

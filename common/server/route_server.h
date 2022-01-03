@@ -4,11 +4,11 @@
 #include <engine/route_engine.h>
 #include <graph/graph_manager.h>
 #include "pipes/ServerChannel.h"
-#include "server/client/ClientManager.h"
+#include "server/client/client_manager.h"
 #include "types.h"
 #include "boost/interprocess/shared_memory_object.hpp"
 #include "boost/interprocess/mapped_region.hpp"
-#include "BufferManager.h"
+#include "buffer_manager.h"
 
 using boost::interprocess::shared_memory_object;
 using boost::interprocess::mapped_region;
@@ -25,16 +25,16 @@ namespace route  {
 
     private:
         ServerChannel requestChannel;
-        ClientManager clientManager;
+        client_manager clientManager;
         route_engine audioEngine;
-        BufferManager bufferManager;
+        buffer_manager bufferManager;
         graph_manager graphManager;
         RunState serverState = RunState::IDLE;
         shared_memory_object shm_info;
         mapped_region shm_info_region;
         route_server_info* info;
 
-        STATUS updateServerState(RunState newState);
+        STATUS update_server_state(RunState newState);
 
     public:
         route_server();
@@ -46,14 +46,14 @@ namespace route  {
         STATUS start();
         STATUS stop();
 
-        ClientManager* getClientManager();
-        BufferManager* getBufferManager();
-        route_engine & get_audio_engine();
+        client_manager& get_client_manager();
+        buffer_manager& get_buffer_manager();
+        route_engine& get_audio_engine();
         graph_manager& get_graph_manager();
 
-        RunState getState() const;
+        RunState get_state() const;
 
-        route_server_info* getServerInfo();
+        route_server_info* get_server_info();
 
         STATUS tempAction(const std::string& action);
 

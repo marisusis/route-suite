@@ -19,7 +19,7 @@ STATUS route::route_engine::open() {
     DBG_CTX(route_engine::open, "opening audio engine...");
 
     // open our clock
-    clock.open(server->getServerInfo()->sampleRate, server->getServerInfo()->bufferSize);
+    clock.open(server->get_server_info()->sampleRate, server->get_server_info()->bufferSize);
 
     // start the clock
     clock.start();

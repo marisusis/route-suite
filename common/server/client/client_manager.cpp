@@ -1,11 +1,11 @@
-#include "ClientManager.h"
+#include "client_manager.h"
 #include "utils.h"
 #include "server/route_server.h"
 
 namespace route {
 
-    ClientManager::ClientManager(route_server *server) : server(server) {
-        DBG_CTX(ClientManager::new, "");
+    client_manager::client_manager(route_server *server) : server(*server) {
+        DBG_CTX(client_manager::new, "");
 
         // set all active refs to disabled
         for (int i = 0; i < MAX_CLIENTS; i++) {
@@ -13,12 +13,12 @@ namespace route {
         }
     }
 
-    ClientManager::~ClientManager() {
-        DBG_CTX(ClientManager::~, "");
+    client_manager::~client_manager() {
+        DBG_CTX(client_manager::~, "");
     }
 
-    STATUS ClientManager::open() {
-        DBG_CTX(ClientManager::open, "opening ClientManager...");
+    STATUS client_manager::open() {
+        DBG_CTX(client_manager::open, "opening ClientManager...");
 
         // remove shared memory in case it exists
         shared_memory_object::remove(ROUTE_SHM_CLIENTS);
@@ -38,14 +38,14 @@ namespace route {
         return STATUS_OK;
     }
 
-    STATUS ClientManager::close() {
-        DBG_CTX(ClientManager::close, "closing ClientManager...");
+    STATUS client_manager::close() {
+        DBG_CTX(client_manager::close, "closing ClientManager...");
 
         // iterate through each client entry
         for (auto item = clients.begin(); item != clients.end(); item++) {
 
             // close the client
-            DBG_CTX(ClientManager::close, "closing client [{}]...", item->first);
+            DBG_CTX(client_manager::close, "closing client [{}]...", item->first);
             item->second->close();
 
             // delete the client
@@ -61,17 +61,17 @@ namespace route {
         return STATUS_OK;
     }
 
-    STATUS ClientManager::addClient(std::string clientName, const int &pid, int *ref) {
-        DBG_CTX(ClientManager::addClient, "adding client [{}/{}]...", clientName, pid);
+    STATUS client_manager::add_client(std::string clientName, const int &pid, int *ref) {
+        DBG_CTX(client_manager::add_client, "adding client [{}/{}]...", clientName, pid);
 
         // get a ref
-        STATUS refGet = allocateRef(*ref);
+        STATUS refGet = allocate_ref(*ref);
         if (refGet != STATUS_OK) {
-            CRT_CTX(ClientManager::addClient, "unable to assign refnum, limit reached!");
+            CRT_CTX(client_manager::add_client, "unable to assign refnum, limit reached!");
             return refGet;
         }
 
-        DBG_CTX(ClientManager::addClient, "assigned ref [{}] to client [{}/{}]...", *ref, clientName, pid);
+        DBG_CTX(client_manager::add_client, "assigned ref [{}] to client [{}/{}]...", *ref, clientName, pid);
 
         // create the client
         Client *client = new Client(clientName, *ref);
@@ -98,8 +98,8 @@ namespace route {
             int inBuf = -1;
             int outBuf = -1;
 
-            server->getBufferManager()->allocateBuffer(inBuf);
-            server->getBufferManager()->allocateBuffer(outBuf);
+            server.get_buffer_manager().allocate_buffer(inBuf);
+            server.get_buffer_manager().allocate_buffer(outBuf);
 
             // assign values
             routeClient->inputBufferMap[i] = inBuf;
@@ -117,8 +117,8 @@ namespace route {
             memcpy(&(routeClient->outputChannels[i]), outInfo, sizeof(channel_info));
 
             // register ports with the graph manager
-            server->get_graph_manager().add_port(inInfo->name, *ref, i, true);
-            server->get_graph_manager().add_port(outInfo->name, *ref, i, false);
+            server.get_graph_manager().add_port(inInfo->name, *ref, i, true);
+            server.get_graph_manager().add_port(outInfo->name, *ref, i, false);
         }
 
         // clean up memory
@@ -126,8 +126,8 @@ namespace route {
         delete outInfo;
 
         // set default I/O latency
-        routeClient->inputLatency = server->getServerInfo()->bufferSize;
-        routeClient->outputLatency = server->getServerInfo()->bufferSize * 2;
+        routeClient->inputLatency = server.get_server_info()->bufferSize;
+        routeClient->outputLatency = server.get_server_info()->bufferSize * 2;
 
         // assign mutex name
         memcpy(routeClient->clockMutexName, format_string("%s%d", ROUTE_CLOCK_MUTEX_PREFIX, *ref).c_str(), sizeof(char) * MUTEX_NAME_SIZE);
@@ -138,15 +138,15 @@ namespace route {
         return STATUS_OK;
     }
 
-    STATUS ClientManager::closeClient(const int ref) {
-        DBG_CTX(ClientManager::closeClient, "closing client [{}]...", ref);
+    STATUS client_manager::close_client(const int ref) {
+        DBG_CTX(client_manager::close_client, "closing client [{}]...", ref);
 
         // check if ref exists
         auto find = clients.find(ref);
 
         if (find == clients.end()) {
             // no client found
-            ERR_CTX(ClientManager::closeClient, "no client found for ref [{}]!", ref);
+            ERR_CTX(client_manager::close_client, "no client found for ref [{}]!", ref);
             return STATUS_NO_REF;
         }
 
@@ -160,16 +160,16 @@ namespace route {
 
         // free the buffers
         for (int i = 0; i < MAX_CHANNELS; i++) {
-            server->getBufferManager()->freeBuffer(shmClient.inputBufferMap[i]);
-            server->getBufferManager()->freeBuffer(shmClient.outputBufferMap[i]);
+            server.get_buffer_manager().free_buffer(shmClient.inputBufferMap[i]);
+            server.get_buffer_manager().free_buffer(shmClient.outputBufferMap[i]);
 
             // remove ports
-            server->get_graph_manager().remove_port(ref, i, true);
-            server->get_graph_manager().remove_port(ref, i, false);
+            server.get_graph_manager().remove_port(ref, i, true);
+            server.get_graph_manager().remove_port(ref, i, false);
         }
 
         // free its refnum
-        freeRef(ref);
+        free_ref(ref);
 
         // erase the entry
         clients.erase(find);
@@ -180,7 +180,7 @@ namespace route {
         return STATUS_OK;
     }
 
-    STATUS ClientManager::freeRef(int ref) {
+    STATUS client_manager::free_ref(int ref) {
 
         // check if the ref is active
         if (!activeRefs[ref]) return STATUS_NO_REF;
@@ -192,7 +192,7 @@ namespace route {
         return STATUS_OK;
     }
 
-    STATUS ClientManager::allocateRef(int &ref) {
+    STATUS client_manager::allocate_ref(int &ref) {
         // start at 0
         ref = 0;
 
@@ -221,19 +221,29 @@ namespace route {
 
     }
 
-    std::map<int, Client*>* ClientManager::getClients() {
+    std::map<int, Client*>* client_manager::getClients() {
         return &clients;
     }
 
-    client_info* ClientManager::getClientInfo(int ref) {
+    client_info* client_manager::get_client_info(int ref) {
 
         if (!activeRefs[ref]) {
-            ERR_CTX(ClientManager::getClientInfo, "client [{}] does not exist", ref);
+            ERR_CTX(client_manager::get_client_info, "client [{}] does not exist", ref);
             return nullptr;
         }
 
         return &(shmClients[ref]);
 
+    }
+
+    buffer_info* client_manager::get_buffer_info(int ref, int channel, bool input) {
+
+        // get the client info
+        const client_info* clientInfo = get_client_info(ref);
+
+        const int bufferIndex = input ? clientInfo->inputBufferMap[channel] : clientInfo->outputBufferMap[channel];
+
+        return server.get_buffer_manager().get_buffer(bufferIndex);
     }
 
 

@@ -6,7 +6,7 @@
 
 namespace route {
 
-    RequestDecoder::RequestDecoder(route_server* the_server, ChannelConnectionThread* channel_thread) : server(the_server), channelThread(channel_thread) {
+    RequestDecoder::RequestDecoder(route_server* the_server, ChannelConnectionThread* channel_thread) : server(*the_server), channelThread(channel_thread) {
         DBG_CTX(RequestDecoder::new, "");
     }
 
@@ -28,7 +28,7 @@ namespace route {
                 req.read(pipe);
 
                 // add client
-                server->getClientManager()->addClient(req.name, req.pid, &res.referenceNumber);
+                server.get_client_manager().add_client(req.name, req.pid, &res.referenceNumber);
 
                 // write result
                 res.write(pipe);
@@ -48,7 +48,7 @@ namespace route {
                 DBG_CTX(RequestDecoder::handleRequest, "CLIENT_CLOSE[ref={}]", req.ref);
 
                 // close client
-                STATUS closeStatus = server->getClientManager()->closeClient(req.ref);
+                STATUS closeStatus = server.get_client_manager().close_client(req.ref);
 
                 if (closeStatus != STATUS_OK) {
                     CRT_CTX(RequestDecoder::handleRequest, "unable to close client [{}]! status={}", req.ref, statusToString(closeStatus));

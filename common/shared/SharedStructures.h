@@ -17,7 +17,7 @@ namespace route {
         int channelCount;
     };
 
-    struct route_buffer {
+    struct buffer_info {
         // allow for a double buffer
         float buffer1[MAX_BUFFER_SIZE];
         float buffer2[MAX_BUFFER_SIZE];

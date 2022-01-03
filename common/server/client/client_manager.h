@@ -1,5 +1,5 @@
-#ifndef ROUTE_SUITE_CLIENTMANAGER_H
-#define ROUTE_SUITE_CLIENTMANAGER_H
+#ifndef ROUTE_SUITE_CLIENT_MANAGER_H
+#define ROUTE_SUITE_CLIENT_MANAGER_H
 
 #include <map>
 #include "shared/SharedStructures.h"
@@ -20,35 +20,37 @@ namespace route {
 
     class route_server;
 
-    class ClientManager {
+    class client_manager {
 
     private:
         std::map<int, Client*> clients;
-        route_server* server;
+        route_server& server;
         boolean activeRefs[MAX_CLIENTS];
         client_info* shmClients;
         shared_memory_object shm_clients;
         mapped_region shm_clients_region;
 
-        STATUS freeRef(int ref);
-        STATUS allocateRef(int& ref);
+        STATUS free_ref(int ref);
+        STATUS allocate_ref(int& ref);
 
     public:
-        ClientManager(route_server* server);
-        ~ClientManager();
+        client_manager(route_server* server);
+        ~client_manager();
 
         STATUS open();
         STATUS close();
 
-        STATUS addClient(std::string clientName, const int& pid, int* ref);
+        STATUS add_client(std::string clientName, const int& pid, int* ref);
 
-        STATUS closeClient(const int ref);
+        STATUS close_client(const int ref);
 
-        client_info* getClientInfo(int ref);
+        buffer_info* get_buffer_info(int ref, int channel, bool input);
+
+        client_info* get_client_info(int ref);
 
         std::map<int, Client*>* getClients();
     };
 
 }
 
-#endif //ROUTE_SUITE_CLIENTMANAGER_H
+#endif //ROUTE_SUITE_CLIENT_MANAGER_H

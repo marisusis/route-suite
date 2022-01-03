@@ -56,7 +56,7 @@ namespace route {
         shm_buffers_region = mapped_region(shm_buffers,
                                         boost::interprocess::read_write,
                                         0,
-                                        sizeof(route_buffer) * MAX_BUFFERS);
+                                           sizeof(buffer_info) * MAX_BUFFERS);
 
         shm_clients_region = mapped_region(shm_clients,
                                            read_only,
@@ -64,10 +64,10 @@ namespace route {
                                            sizeof(client_info) * MAX_CLIENTS);
 
         // get the client information
-        client_info* clients = static_cast<client_info *>(shm_clients_region.get_address());
+        auto* clients = static_cast<client_info *>(shm_clients_region.get_address());
         clientInfo = clients[ref];
 
-        buffers = static_cast<route_buffer *>(shm_buffers_region.get_address());
+        buffers = static_cast<buffer_info *>(shm_buffers_region.get_address());
 
         // load the info from shared memory
         info = static_cast<route_server_info *>(shm_info_region.get_address());
@@ -88,10 +88,11 @@ namespace route {
 
         ClientCloseRequest req(ref);
 
+        // notify server of closing client
         channel.serverSend(&req);
 
+        // close the server/client channel
         channel.close();
-
 
         // client is closed
         state = ClientStatus::CLOSED;
@@ -99,11 +100,11 @@ namespace route {
         return STATUS_OK;
     }
 
-    int route_client::getRef() const {
+    int route_client::get_ref() const {
         return ref;
     }
 
-    STATUS route_client::openConfig() {
+    STATUS route_client::open_config() {
         // create the request
         OpenConfigRequest req(ref);
 
@@ -113,29 +114,29 @@ namespace route {
         return STATUS_OK;
     }
 
-    int route_client::getSampleRate() const {
+    int route_client::get_sample_rate() const {
         return info->sampleRate;
     }
 
-    int route_client::getBufferSize() const {
+    int route_client::get_buffer_size() const {
         return info->bufferSize;
     }
 
-    int route_client::getChannelCount() const {
+    int route_client::get_channel_count() const {
         return info->channelCount;
     }
 
-    int route_client::getInputLatency() const {
+    int route_client::get_input_latency() const {
         return clientInfo.inputLatency;
     }
 
-    int route_client::getOutputLatency() const {
+    int route_client::get_output_latency() const {
         return clientInfo.outputLatency;
     }
 
-    route_buffer* route_client::getBuffer(bool input, int index) {
+    buffer_info* route_client::get_buffer(bool input, int index) {
         if (index >= MAX_CHANNELS) {
-            CRT_CTX(route_client::getBuffer, "channel index {0} out of range {1}!", index, MAX_CHANNELS);
+            CRT_CTX(route_client::get_buffer, "channel index {0} out of range {1}!", index, MAX_CHANNELS);
         }
 
         int buf = -1;
@@ -146,7 +147,7 @@ namespace route {
         }
 
         if (buf < 0) {
-            CRT_CTX(route_client::getBuffer, "no buffer available for [REF {0}] {2} channel {1}", ref, index, input ? "input" : "output");
+            CRT_CTX(route_client::get_buffer, "no buffer available for [REF {0}] {2} channel {1}", ref, index, input ? "input" : "output");
             return nullptr;
         }
 

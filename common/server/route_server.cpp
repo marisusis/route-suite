@@ -94,13 +94,13 @@ namespace route {
         LOG_CTX(route_server::start, "starting server...");
 
         // set state to starting
-        updateServerState(RunState::STARTING);
+        update_server_state(RunState::STARTING);
 
         // start the request channel
         STATUS ret = requestChannel.start();
 
         // server is now started
-        updateServerState(RunState::RUNNING);
+        update_server_state(RunState::RUNNING);
 
         return ret;
     }
@@ -109,7 +109,7 @@ namespace route {
         LOG_CTX(route_server::stop, "stopping server...");
 
         // set state to stopping
-        updateServerState(RunState::STOPPING);
+        update_server_state(RunState::STOPPING);
 
         // TODO alert all clients
 
@@ -117,36 +117,36 @@ namespace route {
         STATUS ret = requestChannel.stop();
 
         // update state
-        updateServerState(RunState::IDLE);
+        update_server_state(RunState::IDLE);
 
         return ret;
     }
 
-    ClientManager* route_server::getClientManager() {
-        return &clientManager;
+    client_manager& route_server::get_client_manager() {
+        return clientManager;
     }
 
-    BufferManager* route_server::getBufferManager() {
-        return &bufferManager;
+    buffer_manager& route_server::get_buffer_manager() {
+        return bufferManager;
     }
 
     route_engine& route_server::get_audio_engine() {
         return audioEngine;
     }
 
-    route_server_info* route_server::getServerInfo() {
+    route_server_info* route_server::get_server_info() {
         return  info;
     }
 
-    STATUS route_server::updateServerState(RunState newState) {
-        DBG_CTX(route_server::updateServerState, "updating server state {0}->{1}");
+    STATUS route_server::update_server_state(RunState newState) {
+        DBG_CTX(route_server::update_server_state, "updating server state {0}->{1}");
 
         serverState = newState;
 
         return STATUS_OK;
     }
 
-    RunState route_server::getState() const {
+    RunState route_server::get_state() const {
         return serverState;
     }
 

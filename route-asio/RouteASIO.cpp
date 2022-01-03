@@ -194,14 +194,14 @@ namespace route {
         }
 
         // update block frames
-        blockFrames = routeClient->getBufferSize();
+        blockFrames = routeClient->get_buffer_size();
 
         // allocate memory for buffers
-        inputBuffers = new float*[routeClient->getChannelCount()]; //static_cast<float *>(malloc(sizeof(float) * MAX_BUFFER_SIZE * 2));
-        outputBuffers = new float*[routeClient->getChannelCount()]; //static_cast<float *>(malloc(sizeof(float) * MAX_BUFFER_SIZE * 2));
+        inputBuffers = new float*[routeClient->get_channel_count()]; //static_cast<float *>(malloc(sizeof(float) * MAX_BUFFER_SIZE * 2));
+        outputBuffers = new float*[routeClient->get_channel_count()]; //static_cast<float *>(malloc(sizeof(float) * MAX_BUFFER_SIZE * 2));
 
         // create empty buffers
-        for (int i = 0; i < routeClient->getChannelCount(); i++) {
+        for (int i = 0; i < routeClient->get_channel_count(); i++) {
             inputBuffers[i] = nullptr;
             outputBuffers[i] = nullptr;
         }
@@ -265,22 +265,22 @@ namespace route {
 
 
     ASIOError RouteASIO::getChannels(long* numInputChannels, long* numOutputChannels) {
-        *numInputChannels = routeClient->getChannelCount();
-        *numOutputChannels = routeClient->getChannelCount();
+        *numInputChannels = routeClient->get_channel_count();
+        *numOutputChannels = routeClient->get_channel_count();
         return ASE_OK;
     }
 
 
     ASIOError RouteASIO::getLatencies(long* _inputLatency, long* _outputLatency) {
-        *_inputLatency = routeClient->getInputLatency();
-        *_outputLatency = routeClient->getOutputLatency();
+        *_inputLatency = routeClient->get_input_latency();
+        *_outputLatency = routeClient->get_output_latency();
         return ASE_OK;
     }
 
 
     ASIOError RouteASIO::getBufferSize(long* minSize, long* maxSize,
                                        long* preferredSize, long* granularity) {
-        *minSize = *maxSize = *preferredSize = routeClient->getBufferSize();        // allow this size only
+        *minSize = *maxSize = *preferredSize = routeClient->get_buffer_size();        // allow this size only
         *granularity = 0;
         return ASE_OK;
     }
@@ -289,7 +289,7 @@ namespace route {
     ASIOError RouteASIO::canSampleRate(ASIOSampleRate sampleRate) {
         LOG_CTX(RouteASIO::canSampleRate, "check sample rate {}hz", sampleRate);
 
-        if (sampleRate == routeClient->getSampleRate())        // allow these rates only
+        if (sampleRate == routeClient->get_sample_rate())        // allow these rates only
             return ASE_OK;
         return ASE_NoClock;
     }
@@ -297,7 +297,7 @@ namespace route {
 
     ASIOError RouteASIO::getSampleRate(ASIOSampleRate* sampleRate) {
         LOG_CTX(RouteASIO::getSampleRate, "get sample rate {}hz", *sampleRate);
-        *sampleRate = routeClient->getSampleRate();
+        *sampleRate = routeClient->get_sample_rate();
         return ASE_OK;
     }
 
@@ -305,7 +305,7 @@ namespace route {
     ASIOError RouteASIO::setSampleRate(ASIOSampleRate sampleRate) {
         LOG_CTX(RouteASIO::setSampleRate, "set sample rate {}hz", sampleRate);
 
-        if (sampleRate != routeClient->getSampleRate())
+        if (sampleRate != routeClient->get_sample_rate())
             return ASE_NoClock;
         if (sampleRate != this->sampleRate) {
             this->sampleRate = sampleRate;
@@ -358,7 +358,7 @@ namespace route {
     ASIOError RouteASIO::getChannelInfo(ASIOChannelInfo* info) {
 //        DBG_CTX(RouteASIO::getChannelInfo, "{} channel #{} named {}", info->is_input ? "input" : "output", info->channel,
 //                info->name);
-        if (info->channel < 0 || info->channel >= routeClient->getChannelCount())
+        if (info->channel < 0 || info->channel >= routeClient->get_channel_count())
             return ASE_InvalidParameter;
 
         info->type = ASIOSTFloat32LSB;
@@ -382,19 +382,19 @@ namespace route {
 
         ASIOBufferInfo* info = bufferInfos;
 
-        blockFrames = routeClient->getBufferSize();
+        blockFrames = routeClient->get_buffer_size();
 
         // initialize buffers
-        for (int i = 0; i < routeClient->getChannelCount(); i++) {
-            inputBuffers[i] = new float[routeClient->getBufferSize() * 2];
-            outputBuffers[i] = new float[routeClient->getBufferSize() * 2];
+        for (int i = 0; i < routeClient->get_channel_count(); i++) {
+            inputBuffers[i] = new float[routeClient->get_buffer_size() * 2];
+            outputBuffers[i] = new float[routeClient->get_buffer_size() * 2];
 
-            memset(inputBuffers[i], 0, routeClient->getBufferSize() * 2 * sizeof(float));
-            memset(outputBuffers[i], 0, routeClient->getBufferSize() * 2 * sizeof(float));
+            memset(inputBuffers[i], 0, routeClient->get_buffer_size() * 2 * sizeof(float));
+            memset(outputBuffers[i], 0, routeClient->get_buffer_size() * 2 * sizeof(float));
         }
 
         for (int i = 0; i < numChannels; i++, info++) {
-            if (info->channelNum < 0 || info->channelNum >= routeClient->getChannelCount()) {
+            if (info->channelNum < 0 || info->channelNum >= routeClient->get_channel_count()) {
                 CRT_CTX(RouteASIO::createBuffers, "channel index {0} out of range", info->channelNum);
             }
 
@@ -450,7 +450,7 @@ namespace route {
 
     ASIOError RouteASIO::controlPanel() {
         DBG_CTX(RouteASIO::controlPanel, "opening control panel...");
-        routeClient->openConfig();
+        routeClient->open_config();
         return ASE_NotPresent;
     }
 
@@ -493,10 +493,10 @@ namespace route {
     }
 
     void RouteASIO::processInput() {
-        for (int i = 0; i < routeClient->getChannelCount(); i++) {
+        for (int i = 0; i < routeClient->get_channel_count(); i++) {
 
             // get the buffer
-            route_buffer* buf = routeClient->getBuffer(true, i);
+            buffer_info* buf = routeClient->get_buffer(true, i);
 
             if (buf == nullptr) continue;
 
@@ -510,10 +510,10 @@ namespace route {
     }
 
     void RouteASIO::processOutput() {
-        for (int i = 0; i < routeClient->getChannelCount(); i++) {
+        for (int i = 0; i < routeClient->get_channel_count(); i++) {
 
             // get the buffer
-            route_buffer* buf = routeClient->getBuffer(false, i);
+            buffer_info* buf = routeClient->get_buffer(false, i);
 
             if (buf == nullptr) continue;
 

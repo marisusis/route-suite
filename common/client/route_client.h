@@ -42,7 +42,7 @@ namespace route {
         ClientStatus state = CLOSED;
 
         // buffers
-        route_buffer* buffers = nullptr;
+        buffer_info* buffers = nullptr;
 
 
     public:
@@ -52,22 +52,22 @@ namespace route {
         STATUS open();
         STATUS close();
 
-        STATUS openConfig();
+        STATUS open_config();
 
         channel_info get_channel_info(bool input, int index);
 
-        int getRef() const;
+        int get_ref() const;
 
-        int getSampleRate() const;
-        int getBufferSize() const;
-        int getChannelCount() const;
+        int get_sample_rate() const;
+        int get_buffer_size() const;
+        int get_channel_count() const;
 
-        int getOutputLatency() const;
-        int getInputLatency() const;
+        int get_output_latency() const;
+        int get_input_latency() const;
 
         ClientStatus getState() const;
 
-        route_buffer* getBuffer(bool input, int index);
+        buffer_info* get_buffer(bool input, int index);
 
     };
 
