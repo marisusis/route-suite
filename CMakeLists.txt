@@ -28,9 +28,7 @@ endfunction(download_file)
 set(CMAKE_CXX_STANDARD 20)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/conanstuff")
-list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_LIST_DIR}/conanstuff")
-
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/conan_modules")
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/asiosdk.zip)
     file(DOWNLOAD https://download.steinberg.net/sdk_downloads/asiosdk_2.3.3_2019-06-14.zip ${CMAKE_CURRENT_SOURCE_DIR}/asiosdk.zip
