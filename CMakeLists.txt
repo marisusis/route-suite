@@ -3,6 +3,9 @@ project(route_suite)
 
 add_compile_definitions(_WINDLL)
 
+# disable checking for cmake and conan compiler version match
+set( CONAN_DISABLE_CHECK_COMPILER 1)
+
 configure_file(cli-download/CMakeLists.txt.in cli-download/CMakeLists.txt)
 
 execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
@@ -49,6 +52,7 @@ find_package(ASIO REQUIRED)
 
 set(COMMON_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/common")
 set(IMGUI_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/imgui")
+
 
 
 #find_package(DirectX11)
