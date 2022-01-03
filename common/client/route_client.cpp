@@ -1,20 +1,20 @@
 #include <shared/SharedStructures.h>
-#include "RouteClient.h"
+#include "route_client.h"
 #include "utils.h"
 #include "constants.h"
 
 namespace route {
 
-    RouteClient::RouteClient(const std::string client_name) : clientName(client_name) {
-        TRC_CTX(RouteClient::new, "");
+    route_client::route_client(const std::string client_name) : clientName(client_name) {
+        TRC_CTX(route_client::new, "");
     }
 
-    RouteClient::~RouteClient() {
-        TRC_CTX(RouteClient::~, "");
+    route_client::~route_client() {
+        TRC_CTX(route_client::~, "");
     }
 
-    STATUS RouteClient::open() {
-        DBG_CTX(RouteClient::open, "opening client...");
+    STATUS route_client::open() {
+        DBG_CTX(route_client::open, "opening client...");
 
         state = ClientStatus::OPENING;
 
@@ -23,7 +23,7 @@ namespace route {
 
         // return with bad status if we cannot open
         if (openStatus != STATUS_OK) {
-            CRT_CTX(RouteClient::open, "unable to establish connection with server! status={}", statusToString(openStatus));
+            CRT_CTX(route_client::open, "unable to establish connection with server! status={}", statusToString(openStatus));
             return openStatus;
         }
 
@@ -34,12 +34,12 @@ namespace route {
         STATUS callStatus = channel.serverCall(&req, &res);
 
         if (callStatus != STATUS_OK) {
-            CRT_CTX(RouteClient::open, "unable to open client!");
+            CRT_CTX(route_client::open, "unable to open client!");
             return callStatus;
         }
 
         // set the ref
-        LOG_CTX(RouteClient::open, "assigned ref {}.", res.referenceNumber);
+        LOG_CTX(route_client::open, "assigned ref {}.", res.referenceNumber);
         ref = res.referenceNumber;
 
         // load shared memory
@@ -61,10 +61,10 @@ namespace route {
         shm_clients_region = mapped_region(shm_clients,
                                            read_only,
                                            0,
-                                           sizeof(route_client) * MAX_CLIENTS);
+                                           sizeof(client_info) * MAX_CLIENTS);
 
         // get the client information
-        route_client* clients = static_cast<route_client *>(shm_clients_region.get_address());
+        client_info* clients = static_cast<client_info *>(shm_clients_region.get_address());
         clientInfo = clients[ref];
 
         buffers = static_cast<route_buffer *>(shm_buffers_region.get_address());
@@ -72,7 +72,7 @@ namespace route {
         // load the info from shared memory
         info = static_cast<route_server_info *>(shm_info_region.get_address());
 
-        LOG_CTX(RouteClient::open, "connected to [{2}/v{3}]; running at {0}smp/{1}hz", info->bufferSize, info->sampleRate, info->name, info->version);
+        LOG_CTX(route_client::open, "connected to [{2}/v{3}]; running at {0}smp/{1}hz", info->bufferSize, info->sampleRate, info->name, info->version);
 
         // client is now open
         state = ClientStatus::OPEN;
@@ -80,8 +80,8 @@ namespace route {
         return STATUS_OK;
     }
 
-    STATUS RouteClient::close() {
-        DBG_CTX(RouteClient::open, "closing client...");
+    STATUS route_client::close() {
+        DBG_CTX(route_client::open, "closing client...");
 
         // start closing client
         state = ClientStatus::CLOSING;
@@ -99,11 +99,11 @@ namespace route {
         return STATUS_OK;
     }
 
-    int RouteClient::getRef() const {
+    int route_client::getRef() const {
         return ref;
     }
 
-    STATUS RouteClient::openConfig() {
+    STATUS route_client::openConfig() {
         // create the request
         OpenConfigRequest req(ref);
 
@@ -113,29 +113,29 @@ namespace route {
         return STATUS_OK;
     }
 
-    int RouteClient::getSampleRate() const {
+    int route_client::getSampleRate() const {
         return info->sampleRate;
     }
 
-    int RouteClient::getBufferSize() const {
+    int route_client::getBufferSize() const {
         return info->bufferSize;
     }
 
-    int RouteClient::getChannelCount() const {
+    int route_client::getChannelCount() const {
         return info->channelCount;
     }
 
-    int RouteClient::getInputLatency() const {
+    int route_client::getInputLatency() const {
         return clientInfo.inputLatency;
     }
 
-    int RouteClient::getOutputLatency() const {
+    int route_client::getOutputLatency() const {
         return clientInfo.outputLatency;
     }
 
-    route_buffer* RouteClient::getBuffer(bool input, int index) {
+    route_buffer* route_client::getBuffer(bool input, int index) {
         if (index >= MAX_CHANNELS) {
-            CRT_CTX(RouteClient::getBuffer, "channel index {0} out of range {1}!", index, MAX_CHANNELS);
+            CRT_CTX(route_client::getBuffer, "channel index {0} out of range {1}!", index, MAX_CHANNELS);
         }
 
         int buf = -1;
@@ -146,16 +146,16 @@ namespace route {
         }
 
         if (buf < 0) {
-            CRT_CTX(RouteClient::getBuffer, "no buffer available for [REF {0}] {2} channel {1}", ref, index, input ? "input" : "output");
+            CRT_CTX(route_client::getBuffer, "no buffer available for [REF {0}] {2} channel {1}", ref, index, input ? "input" : "output");
             return nullptr;
         }
 
         return &(buffers[buf]);
     }
 
-    route_channel_info RouteClient::getChannelInfo(bool input, int index) {
+    channel_info route_client::get_channel_info(bool input, int index) {
         if (index >= MAX_CHANNELS) {
-            CRT_CTX(RouteClient::getChannelInfo, "channel index {0} out of range {1}!", index, MAX_CHANNELS);
+            CRT_CTX(route_client::get_channel_info, "channel index {0} out of range {1}!", index, MAX_CHANNELS);
         }
 
         if (input) {
@@ -165,7 +165,7 @@ namespace route {
         }
     }
 
-    ClientStatus RouteClient::getState() const {
+    ClientStatus route_client::getState() const {
         return state;
     }
 

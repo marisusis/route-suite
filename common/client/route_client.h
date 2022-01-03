@@ -1,5 +1,5 @@
-#ifndef ROUTE_SUITE_ROUTECLIENT_H
-#define ROUTE_SUITE_ROUTECLIENT_H
+#ifndef ROUTE_SUITE_ROUTE_CLIENT_H
+#define ROUTE_SUITE_ROUTE_CLIENT_H
 
 #include "shared/SharedStructures.h"
 #include "pipes/ClientChannel.h"
@@ -25,7 +25,7 @@ namespace route {
 
     };
 
-    class RouteClient {
+    class route_client {
 
     private:
         ClientChannel channel;
@@ -37,7 +37,7 @@ namespace route {
         mapped_region shm_info_region;
         mapped_region shm_buffers_region;
         mapped_region shm_clients_region;
-        route_client clientInfo;
+        client_info clientInfo;
         route_server_info* info;
         ClientStatus state = CLOSED;
 
@@ -46,15 +46,15 @@ namespace route {
 
 
     public:
-        RouteClient(std::string client_name);
-        ~RouteClient();
+        route_client(std::string client_name);
+        ~route_client();
 
         STATUS open();
         STATUS close();
 
         STATUS openConfig();
 
-        route_channel_info getChannelInfo(bool input, int index);
+        channel_info get_channel_info(bool input, int index);
 
         int getRef() const;
 
@@ -73,4 +73,4 @@ namespace route {
 
 }
 
-#endif //ROUTE_SUITE_ROUTECLIENT_H
+#endif //ROUTE_SUITE_ROUTE_CLIENT_H

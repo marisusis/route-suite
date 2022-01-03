@@ -1,18 +1,18 @@
-#include "AudioClock.h"
-#include "RouteEngine.h"
+#include "audio_clock.h"
+#include "route_engine.h"
 #include "utils.h"
 
-route::AudioClock::AudioClock(RouteEngine* engine) : engine(engine), thread(this, "AudioClock", true) {
-    DBG_CTX(AudioClock::new, "");
+route::audio_clock::audio_clock(route_engine* engine) : engine(engine), thread(this, "AudioClock", true) {
+    DBG_CTX(audio_clock::new, "");
 }
 
-route::AudioClock::~AudioClock() {
-    DBG_CTX(AudioClock::~, "");
+route::audio_clock::~audio_clock() {
+    DBG_CTX(audio_clock::~, "");
 }
 
 
-STATUS route::AudioClock::open(int sample_rate, int buffer_size) {
-    LOG_CTX(AudioClock::open, "opened clock with sampleRate={}, bufferSize={}", sample_rate, buffer_size);
+STATUS route::audio_clock::open(int sample_rate, int buffer_size) {
+    LOG_CTX(audio_clock::open, "opened clock with sampleRate={}, bufferSize={}", sample_rate, buffer_size);
 
     // assign values
     this->sampleRate = sample_rate;
@@ -21,8 +21,8 @@ STATUS route::AudioClock::open(int sample_rate, int buffer_size) {
     return STATUS_OK;
 }
 
-STATUS route::AudioClock::close() {
-    DBG_CTX(AudioClock::close, "closing audio clock...");
+STATUS route::audio_clock::close() {
+    DBG_CTX(audio_clock::close, "closing audio clock...");
 
     // stop the clock
     this->stop();
@@ -30,16 +30,16 @@ STATUS route::AudioClock::close() {
     return STATUS_OK;
 }
 
-STATUS route::AudioClock::start() {
-    LOG_CTX(AudioClock::start, "starting audio clock...");
+STATUS route::audio_clock::start() {
+    LOG_CTX(audio_clock::start, "starting audio clock...");
 
     thread.start();
 
     return STATUS_OK;
 }
 
-STATUS route::AudioClock::stop() {
-    LOG_CTX(AudioClock::stop, "stopping audio clock...");
+STATUS route::audio_clock::stop() {
+    LOG_CTX(audio_clock::stop, "stopping audio clock...");
 
     // stop the audio clock thread
     thread.stop();
@@ -47,7 +47,7 @@ STATUS route::AudioClock::stop() {
     return STATUS_OK;
 }
 
-STATUS route::AudioClock::init() {
+STATUS route::audio_clock::init() {
 
     waitTime = std::chrono::duration<double>(bufferSize/sampleRate);
 
@@ -59,7 +59,7 @@ STATUS route::AudioClock::init() {
     return STATUS_OK;
 }
 
-STATUS route::AudioClock::execute() {
+STATUS route::audio_clock::execute() {
 
     // since we are running in a realtime state, we'll break when the thread is "no longer running"
     if (thread.getState() != RUNNING) return STATUS_BREAK;

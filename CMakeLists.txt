@@ -90,8 +90,8 @@ add_library(RouteCommon STATIC
             common/pipes/ClientChannel.h
             common/pipes/RequestDecoder.cpp
             common/pipes/RequestDecoder.h
-            common/client/RouteClient.cpp
-            common/client/RouteClient.h
+        common/client/route_client.cpp
+        common/client/route_client.h
             common/utils.cpp
             common/server/client/ClientManager.cpp
             common/server/client/ClientManager.h
@@ -102,10 +102,10 @@ add_library(RouteCommon STATIC
             common/shared/SharedStructures.h
             common/server/BufferManager.cpp
             common/server/BufferManager.h
-            common/engine/RouteEngine.cpp
-            common/engine/RouteEngine.h
-            common/engine/AudioClock.cpp
-            common/engine/AudioClock.h
+        common/engine/route_engine.cpp
+        common/engine/route_engine.h
+        common/engine/audio_clock.cpp
+        common/engine/audio_clock.h
         common/graph/graph_manager.cpp
         common/graph/graph_manager.h
             common/graph/port.cpp

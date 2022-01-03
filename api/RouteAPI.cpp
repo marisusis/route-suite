@@ -5,12 +5,12 @@
 #include "RouteAPI.h"
 
 #include <utility>
-#include "client/RouteClient.h"
+#include "client/route_client.h"
 
 namespace RouteAPI {
 
     APIClient::APIClient(const char *name) {
-        client = new route::RouteClient(name);
+        client = new route::route_client(name);
     }
 
     void APIClient::open() {

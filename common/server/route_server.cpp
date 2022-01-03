@@ -130,12 +130,12 @@ namespace route {
         return &bufferManager;
     }
 
-    RouteEngine* route_server::getAudioEngine() {
-        return &audioEngine;
+    route_engine& route_server::get_audio_engine() {
+        return audioEngine;
     }
 
     route_server_info* route_server::getServerInfo() {
-        return info;
+        return  info;
     }
 
     STATUS route_server::updateServerState(RunState newState) {

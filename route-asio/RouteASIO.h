@@ -2,7 +2,7 @@
 #define _asiosmpl_
 
 #include "asiosys.h"
-#include "client/RouteClient.h"
+#include "client/route_client.h"
 
 // when true, will feed the left input (to host) with
 // a sine wave, and the right one with a sawtooth
@@ -111,7 +111,7 @@ namespace route {
 
         long getMilliSeconds() { return milliSeconds; }
 
-        RouteClient* routeClient;
+        route_client* routeClient;
 
 
     private:

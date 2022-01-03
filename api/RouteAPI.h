@@ -6,7 +6,7 @@
 #define EXPORT  __declspec(dllexport)
 
 namespace route {
-    class RouteClient;
+    class route_client;
 }
 
 namespace RouteAPI {
@@ -14,7 +14,7 @@ namespace RouteAPI {
     class APIClient {
 
     private:
-        route::RouteClient *client;
+        route::route_client *client;
 
     public:
         APIClient(const char *name);

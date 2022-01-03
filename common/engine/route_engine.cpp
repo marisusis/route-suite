@@ -2,21 +2,21 @@
 // Created by maris on 12/25/2021.
 //
 
-#include "RouteEngine.h"
+#include "route_engine.h"
 #include "server/route_server.h"
 #include "utils.h"
 
-route::RouteEngine::RouteEngine(route::route_server *server) : server(server), clock(this) {
-    DBG_CTX(RouteEngine::new, "");
+route::route_engine::route_engine(route::route_server *server) : server(server), clock(this) {
+    DBG_CTX(route_engine::new, "");
 }
 
 
-route::RouteEngine::~RouteEngine() {
-    DBG_CTX(RouteEngine::~, "");
+route::route_engine::~route_engine() {
+    DBG_CTX(route_engine::~, "");
 }
 
-STATUS route::RouteEngine::open() {
-    DBG_CTX(RouteEngine::open, "opening audio engine...");
+STATUS route::route_engine::open() {
+    DBG_CTX(route_engine::open, "opening audio engine...");
 
     // open our clock
     clock.open(server->getServerInfo()->sampleRate, server->getServerInfo()->bufferSize);
@@ -27,8 +27,8 @@ STATUS route::RouteEngine::open() {
     return STATUS_OK;
 }
 
-STATUS route::RouteEngine::close() {
-    DBG_CTX(RouteEngine::close, "closing audio engine...");
+STATUS route::route_engine::close() {
+    DBG_CTX(route_engine::close, "closing audio engine...");
 
     // close the clock
     clock.close();
@@ -36,7 +36,7 @@ STATUS route::RouteEngine::close() {
     return STATUS_OK;
 }
 
-STATUS route::RouteEngine::tick() {
+STATUS route::route_engine::tick() {
 //    DBG_CTX(RouteEngine::tick,"");
 
     // process the graph

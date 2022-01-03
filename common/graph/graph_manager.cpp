@@ -187,8 +187,8 @@ namespace route {
             const port& destPort = conn.get_destination();
 
             // get client info
-            route_client* srcClient = clientManager->getClientInfo(srcPort.get_client_ref());
-            route_client* destClient = clientManager->getClientInfo(destPort.get_client_ref());
+            client_info* srcClient = clientManager->getClientInfo(srcPort.get_client_ref());
+            client_info* destClient = clientManager->getClientInfo(destPort.get_client_ref());
 
             // get source buffer
             route_buffer* src = bufferManager->getBuffer(srcClient->outputBufferMap[srcPort.get_channel()]);

@@ -1,14 +1,14 @@
-#ifndef ROUTE_SUITE_AUDIOCLOCK_H
-#define ROUTE_SUITE_AUDIOCLOCK_H
+#ifndef ROUTE_SUITE_AUDIO_CLOCK_H
+#define ROUTE_SUITE_AUDIO_CLOCK_H
 
 #include <types.h>
 #include <thread/Thread.h>
 
 namespace route {
 
-    class RouteEngine;
+    class route_engine;
 
-    class AudioClock : public Runnable {
+    class audio_clock : public Runnable {
 
     private:
         double sampleRate{};
@@ -16,11 +16,11 @@ namespace route {
         Thread thread;
         std::chrono::high_resolution_clock::time_point lastTime;
         std::chrono::duration<double> waitTime;
-        RouteEngine* engine;
+        route_engine* engine;
 
     public:
-        AudioClock(RouteEngine* engine);
-        ~AudioClock();
+        audio_clock(route_engine* engine);
+        ~audio_clock();
 
         STATUS open(int sampleRate, int bufferSize);
         STATUS close();
@@ -36,4 +36,4 @@ namespace route {
 
 }
 
-#endif //ROUTE_SUITE_AUDIOCLOCK_H
+#endif //ROUTE_SUITE_AUDIO_CLOCK_H

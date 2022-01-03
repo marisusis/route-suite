@@ -1,7 +1,7 @@
 #ifndef ROUTE_SUITE_ROUTE_SERVER_H
 #define ROUTE_SUITE_ROUTE_SERVER_H
 
-#include <engine/RouteEngine.h>
+#include <engine/route_engine.h>
 #include <graph/graph_manager.h>
 #include "pipes/ServerChannel.h"
 #include "server/client/ClientManager.h"
@@ -26,7 +26,7 @@ namespace route  {
     private:
         ServerChannel requestChannel;
         ClientManager clientManager;
-        RouteEngine audioEngine;
+        route_engine audioEngine;
         BufferManager bufferManager;
         graph_manager graphManager;
         RunState serverState = RunState::IDLE;
@@ -48,7 +48,7 @@ namespace route  {
 
         ClientManager* getClientManager();
         BufferManager* getBufferManager();
-        RouteEngine* getAudioEngine();
+        route_engine & get_audio_engine();
         graph_manager& get_graph_manager();
 
         RunState getState() const;

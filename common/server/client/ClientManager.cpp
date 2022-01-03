@@ -25,15 +25,15 @@ namespace route {
 
         // create shared memory
         shm_clients = shared_memory_object(open_or_create, ROUTE_SHM_CLIENTS, read_write);
-        shm_clients.truncate(sizeof(route_client) * MAX_CLIENTS);
+        shm_clients.truncate(sizeof(client_info) * MAX_CLIENTS);
 
         // map the memory
         shm_clients_region = mapped_region(shm_clients,
                                            read_write,
                                            0,
-                                           sizeof(route_client) * MAX_CLIENTS);
+                                           sizeof(client_info) * MAX_CLIENTS);
 
-        shmClients = static_cast<route_client *>(shm_clients_region.get_address());
+        shmClients = static_cast<client_info *>(shm_clients_region.get_address());
 
         return STATUS_OK;
     }
@@ -41,19 +41,19 @@ namespace route {
     STATUS ClientManager::close() {
         DBG_CTX(ClientManager::close, "closing ClientManager...");
 
-        // iterate through all
-        std::map<int, Client *>::iterator it = clients.begin();
+        // iterate through each client entry
+        for (auto item = clients.begin(); item != clients.end(); item++) {
 
-        while (it != clients.end()) {
+            // close the client
+            DBG_CTX(ClientManager::close, "closing client [{}]...", item->first);
+            item->second->close();
 
-            // close client
-            DBG_CTX(ClientManager::close, "closing client [{}]...", it->first);
-            it->second->close();
-
-            // delete client
-            delete it->second;
-
+            // delete the client
+            delete item->second;
         }
+
+        // remove all entries from the map
+        clients.clear();
 
         // remove shared memory
         shared_memory_object::remove(ROUTE_SHM_CLIENTS);
@@ -80,14 +80,14 @@ namespace route {
         clients.insert(std::make_pair(*ref, client));
 
         // add the client to the shared memory
-        route_client *routeClient = &(shmClients[*ref]);
+        client_info *routeClient = &(shmClients[*ref]);
 
         // copy name
         memcpy(routeClient->name, clientName.c_str(), sizeof(char) * 256);
 
         // create info
-        route_channel_info *inInfo = new route_channel_info();
-        route_channel_info *outInfo = new route_channel_info();
+        channel_info *inInfo = new channel_info();
+        channel_info *outInfo = new channel_info();
 
         // set active
         inInfo->active = true;
@@ -105,18 +105,25 @@ namespace route {
             routeClient->inputBufferMap[i] = inBuf;
             routeClient->outputBufferMap[i] = outBuf;
 
+            const std::string& inName = format_string("[REF %d] Source %d @ %d", *ref, i + 1, routeClient->inputBufferMap[i]);
+            const std::string& outName = format_string("[REF %d] Sink %d @ %d", *ref, i + 1, routeClient->outputBufferMap[i]);
+
             // set default values
-            memcpy(inInfo->name, format_string("[REF %d] Source %d @ %d", *ref, i + 1, routeClient->inputBufferMap[i]).c_str(), sizeof(char) * 256);
-            memcpy(outInfo->name, format_string("[REF %d] Sink %d @ %d", *ref, i + 1, routeClient->outputBufferMap[i]).c_str(), sizeof(char) * 256);
+            memcpy(inInfo->name, inName.c_str(), sizeof(char) * inName.length());
+            memcpy(outInfo->name, outName.c_str(), sizeof(char) * outName.length());
 
             // copy the info to shm
-            memcpy(&(routeClient->inputChannels[i]), inInfo, sizeof(route_channel_info));
-            memcpy(&(routeClient->outputChannels[i]), outInfo, sizeof(route_channel_info));
+            memcpy(&(routeClient->inputChannels[i]), inInfo, sizeof(channel_info));
+            memcpy(&(routeClient->outputChannels[i]), outInfo, sizeof(channel_info));
 
             // register ports with the graph manager
             server->get_graph_manager().add_port(inInfo->name, *ref, i, true);
             server->get_graph_manager().add_port(outInfo->name, *ref, i, false);
         }
+
+        // clean up memory
+        delete inInfo;
+        delete outInfo;
 
         // set default I/O latency
         routeClient->inputLatency = server->getServerInfo()->bufferSize;
@@ -149,7 +156,7 @@ namespace route {
         // close the client
         client->close();
 
-        route_client shmClient = shmClients[ref];
+        client_info shmClient = shmClients[ref];
 
         // free the buffers
         for (int i = 0; i < MAX_CHANNELS; i++) {
@@ -218,7 +225,7 @@ namespace route {
         return &clients;
     }
 
-    route_client* ClientManager::getClientInfo(int ref) {
+    client_info* ClientManager::getClientInfo(int ref) {
 
         if (!activeRefs[ref]) {
             ERR_CTX(ClientManager::getClientInfo, "client [{}] does not exist", ref);

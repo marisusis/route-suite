@@ -23,12 +23,12 @@ namespace route {
         float buffer2[MAX_BUFFER_SIZE];
     };
 
-    struct route_channel_info {
+    struct channel_info {
         bool active;
         char name[256];
     };
 
-    struct route_client {
+    struct client_info {
         char name[256];
 
         bool usesAudio;
@@ -39,8 +39,8 @@ namespace route {
         int inputBufferMap[MAX_CHANNELS];
         int outputBufferMap[MAX_CHANNELS];
 
-        route_channel_info inputChannels[MAX_CHANNELS];
-        route_channel_info outputChannels[MAX_CHANNELS];
+        channel_info inputChannels[MAX_CHANNELS];
+        channel_info outputChannels[MAX_CHANNELS];
 
         char clockMutexName[MUTEX_NAME_SIZE];
     };

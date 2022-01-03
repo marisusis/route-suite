@@ -147,7 +147,7 @@ int main() {
         for (auto& client : *clients) {
 
             // get client info
-            route::route_client* info = clientManager->getClientInfo(client.first);
+            route::client_info* info = clientManager->getClientInfo(client.first);
 
             spdlog::info("found client [{0}/{1}] ", client.first, info->name);
 

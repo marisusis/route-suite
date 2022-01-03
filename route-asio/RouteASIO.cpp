@@ -124,7 +124,7 @@ namespace route {
         LOG_CTX(RouteASIO::new, "Hello, world!");
 
         // create RouteClient
-        routeClient = new RouteClient("RouteASIO");
+        routeClient = new route_client("RouteASIO");
 
         // create ASIO clock
         clock = new ASIOClock(this);
@@ -366,7 +366,7 @@ namespace route {
         info->isActive = ASIOFalse;
 
         // get info
-        route_channel_info ch = routeClient->getChannelInfo(info->isInput, info->channel);
+        channel_info ch = routeClient->get_channel_info(info->isInput, info->channel);
 
         // set values from config
         memcpy(info->name, ch.name, 32 * sizeof(char));

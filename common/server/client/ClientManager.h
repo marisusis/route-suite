@@ -26,7 +26,7 @@ namespace route {
         std::map<int, Client*> clients;
         route_server* server;
         boolean activeRefs[MAX_CLIENTS];
-        route_client* shmClients;
+        client_info* shmClients;
         shared_memory_object shm_clients;
         mapped_region shm_clients_region;
 
@@ -44,7 +44,7 @@ namespace route {
 
         STATUS closeClient(const int ref);
 
-        route_client* getClientInfo(int ref);
+        client_info* getClientInfo(int ref);
 
         std::map<int, Client*>* getClients();
     };
