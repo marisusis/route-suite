@@ -1,7 +1,7 @@
 #ifndef ROUTE_SUITE_ROUTE_CLIENT_H
 #define ROUTE_SUITE_ROUTE_CLIENT_H
 
-#include "shared/SharedStructures.h"
+#include "shared/shared_structures.h"
 #include "pipes/ClientChannel.h"
 #include "boost/interprocess/shared_memory_object.hpp"
 #include "boost/interprocess/mapped_region.hpp"
@@ -38,7 +38,7 @@ namespace route {
         mapped_region shm_buffers_region;
         mapped_region shm_clients_region;
         client_info clientInfo;
-        route_server_info* info;
+        server_info* info;
         ClientStatus state = CLOSED;
 
         // buffers

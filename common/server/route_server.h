@@ -32,7 +32,7 @@ namespace route  {
         RunState serverState = RunState::IDLE;
         shared_memory_object shm_info;
         mapped_region shm_info_region;
-        route_server_info* info;
+        server_info* info;
 
         STATUS update_server_state(RunState newState);
 
@@ -53,7 +53,7 @@ namespace route  {
 
         RunState get_state() const;
 
-        route_server_info* get_server_info();
+        server_info* get_server_info();
 
         STATUS tempAction(const std::string& action);
 

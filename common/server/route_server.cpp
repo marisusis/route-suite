@@ -1,4 +1,4 @@
-#include "shared/SharedStructures.h"
+#include "shared/shared_structures.h"
 #include "utils.h"
 #include "route_server.h"
 
@@ -16,18 +16,18 @@ namespace route {
         shm_info = shared_memory_object(open_or_create, ROUTE_SHM_INFO, read_write);
 
         // truncate to the size of datatypes
-        DBG_CTX(route_server::new, "truncating shared memory to {0} bytes...", sizeof(route_server_info));
-        shm_info.truncate(sizeof(route_server_info));
+        DBG_CTX(route_server::new, "truncating shared memory to {0} bytes...", sizeof(server_info));
+        shm_info.truncate(sizeof(server_info));
 
         // create the mapped regions
         DBG_CTX(route_server::new, "creating mapped regions");
         shm_info_region = mapped_region(shm_info,
                                         read_write,
                                         0,
-                                        sizeof(route_server_info));
+                                        sizeof(server_info));
 
         // create the info
-        info = static_cast<route_server_info *>(shm_info_region.get_address());
+        info = static_cast<server_info *>(shm_info_region.get_address());
         memcpy(info->name, SERVER_NAME, SERVER_NAME_LENGTH * sizeof(char));
         memcpy(info->version, SERVER_VERSION, VERSION_NAME_LENGTH * sizeof(char));
 
@@ -134,7 +134,7 @@ namespace route {
         return audioEngine;
     }
 
-    route_server_info* route_server::get_server_info() {
+    server_info* route_server::get_server_info() {
         return  info;
     }
 

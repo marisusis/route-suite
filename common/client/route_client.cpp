@@ -1,4 +1,4 @@
-#include <shared/SharedStructures.h>
+#include <shared/shared_structures.h>
 #include "route_client.h"
 #include "utils.h"
 #include "constants.h"
@@ -51,7 +51,7 @@ namespace route {
         shm_info_region = mapped_region(shm_info,
                                         boost::interprocess::read_only,
                                         0,
-                                        sizeof(route_server_info));
+                                        sizeof(server_info));
 
         shm_buffers_region = mapped_region(shm_buffers,
                                         boost::interprocess::read_write,
@@ -70,7 +70,7 @@ namespace route {
         buffers = static_cast<buffer_info *>(shm_buffers_region.get_address());
 
         // load the info from shared memory
-        info = static_cast<route_server_info *>(shm_info_region.get_address());
+        info = static_cast<server_info *>(shm_info_region.get_address());
 
         LOG_CTX(route_client::open, "connected to [{2}/v{3}]; running at {0}smp/{1}hz", info->bufferSize, info->sampleRate, info->name, info->version);
 

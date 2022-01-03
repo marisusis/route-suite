@@ -2,14 +2,14 @@
 // Created by maris on 12/20/2021.
 //
 
-#ifndef ROUTE_SUITE_SHAREDSTRUCTURES_H
-#define ROUTE_SUITE_SHAREDSTRUCTURES_H
+#ifndef ROUTE_SUITE_SHARED_STRUCTURES_H
+#define ROUTE_SUITE_SHARED_STRUCTURES_H
 
 #include "constants.h"
 
 namespace route {
 
-    struct route_server_info {
+    struct server_info {
         char name[SERVER_NAME_LENGTH];
         char version[VERSION_NAME_LENGTH];
         int sampleRate;
@@ -51,4 +51,4 @@ namespace route {
 
 }
 
-#endif //ROUTE_SUITE_SHAREDSTRUCTURES_H
+#endif //ROUTE_SUITE_SHARED_STRUCTURES_H

@@ -1,7 +1,7 @@
 #ifndef ROUTE_SUITE_BUFFER_MANAGER_H
 #define ROUTE_SUITE_BUFFER_MANAGER_H
 
-#include "shared/SharedStructures.h"
+#include "shared/shared_structures.h"
 #include "types.h"
 #include "boost/interprocess/shared_memory_object.hpp"
 #include "boost/interprocess/mapped_region.hpp"

@@ -99,7 +99,7 @@ add_library(RouteCommon STATIC
             common/server/client/Client.h
             common/pipes/NotifyClientChannel.cpp
             common/pipes/NotifyClientChannel.h
-            common/shared/SharedStructures.h
+        common/shared/shared_structures.h
         common/server/buffer_manager.cpp
         common/server/buffer_manager.h
         common/engine/route_engine.cpp

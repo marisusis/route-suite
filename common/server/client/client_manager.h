@@ -2,7 +2,7 @@
 #define ROUTE_SUITE_CLIENT_MANAGER_H
 
 #include <map>
-#include "shared/SharedStructures.h"
+#include "shared/shared_structures.h"
 #include "types.h"
 #include "Client.h"
 #include "boost/interprocess/shared_memory_object.hpp"
