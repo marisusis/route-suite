@@ -6,7 +6,7 @@ add_compile_definitions(_WINDLL)
 # disable checking for cmake and conan compiler version match
 set( CONAN_DISABLE_CHECK_COMPILER 1)
 
-set(PA_USE_ASIO ON)
+set(PA_USE_ASIO OFF)
 
 configure_file(CMakeExternal/cli.cmake cli-download/CMakeLists.txt)
 
@@ -140,6 +140,8 @@ target_include_directories(RouteCommon
 # examples
 add_subdirectory(examples/basic-client)
 add_subdirectory(examples/play_audio_file)
+add_subdirectory(examples/portaudio_client)
+add_subdirectory(utils)
 
 # ASIO driver
 add_subdirectory(route-asio)

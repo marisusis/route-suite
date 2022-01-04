@@ -13,3 +13,6 @@
 /imgui/
 /asiosdk/
 
+/cmake-build-release-x64/
+/bindings/node/node_modules/
+/CMakeFiles/

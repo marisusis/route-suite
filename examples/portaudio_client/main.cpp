@@ -3,13 +3,12 @@
 #include <thread>
 #include <regex>
 #include "spdlog/spdlog.h"
-#include "sndfile.h"
 #include "argparse/argparse.hpp"
 #include "portaudio.h"
+#include "client/route_client.h"
 
 struct player_data {
-    SNDFILE* sndfile;
-    SF_INFO* sfInfo;
+    route::route_client* client;
     int position;
     int sampleRate;
     int bufferSize;
@@ -41,20 +40,15 @@ int main(int argc, char *argv[]) {
 
     // sample rate option
     program.add_argument("-s","--sample_rate")
-        .help("set the sample rate")
-        .default_value(44100)
-        .scan<'i',int>();
+            .help("set the sample rate")
+            .default_value(44100)
+            .scan<'i',int>();
 
     // buffer size option
     program.add_argument("-b","--buffer_size")
             .help("set the buffer size")
             .default_value(256)
             .scan<'i',int>();
-
-    // file path option
-    program.add_argument("audio_file")
-    .required()
-    .help("path of the audio file to play");
 
     // parse arguments
     try {
@@ -74,34 +68,28 @@ int main(int argc, char *argv[]) {
 
     const int sampleRate = program.get<int>("--sample_rate");
     const int bufferSize = program.get<int>("--buffer_size");
-    const std::string filePath = program.get<std::string>("audio_file");
 
     // log the configuration
     spdlog::info("sample rate: {}hz", sampleRate);
     spdlog::info("buffer size: {} samples", bufferSize);
-    spdlog::info("audio file: {}", filePath);
 
-    // create sndfile info
-    SF_INFO sfInfo;
-    sfInfo.format = 0;
+    // create route client
+    route::route_client client("portaudio_client");
 
-    // open the file
-    spdlog::debug("opening file {}...", filePath);
-    SNDFILE* sndfile = sf_open(filePath.c_str(), SFM_READ, &sfInfo);
-
-    // check sound file was created
-    if (sndfile == nullptr) {
-        spdlog::error("unable to open file {} ({})", filePath, sf_strerror(sndfile));
+    // open the client
+    if (client.open() != STATUS_OK) {
+        spdlog::error("unable to open client!");
         exit(1);
     }
 
     // create player data
     spdlog::debug("forming player data...");
     player_data* playerData = new player_data();
-    playerData->sfInfo = &sfInfo;
-    playerData->sndfile = sndfile;
     playerData->sampleRate = sampleRate;
     playerData->bufferSize = bufferSize;
+    playerData->client = &client;
+    playerData->position = 0;
+
 
     // initialize PortAudio
     spdlog::info("preparing PortAudio...");
@@ -123,7 +111,7 @@ int main(int argc, char *argv[]) {
         spdlog::debug("[{0}] {1}/{2}", i, hostApiInfo->name, deviceInfo->name);
 
         // add WASAPI devices
-        if (hostApiInfo->type == 3) {
+        if (hostApiInfo->type == PaHostApiTypeId::paASIO) {
             deviceList.insert(std::pair<std::string, int>(deviceInfo->name, i));
         }
     }
@@ -150,7 +138,7 @@ int main(int argc, char *argv[]) {
     PaStreamParameters outputParameters;
     outputParameters.device = device;
     outputParameters.channelCount = 2;
-    outputParameters.sampleFormat = paFloat32;// | paNonInterleaved;
+    outputParameters.sampleFormat = paFloat32 | paNonInterleaved;
     outputParameters.suggestedLatency = 0.2;
     outputParameters.hostApiSpecificStreamInfo = nullptr;
 
@@ -165,12 +153,16 @@ int main(int argc, char *argv[]) {
             paNoFlag,
             callback,
             playerData
-            );
+    );
 
     // check for any errors
     if (error) {
         spdlog::error("unable to open PortAudio stream ({})", error);
         Pa_Terminate();
+
+        // close route client
+        client.close();
+
         exit(1);
     }
 
@@ -178,13 +170,16 @@ int main(int argc, char *argv[]) {
     Pa_StartStream(stream);
 
     // wait for a bit
-    auto sleepTime = std::chrono::milliseconds(1 * 10000);
+    auto sleepTime = std::chrono::milliseconds(1000 * 1000);
     spdlog::info("waiting for {}ms...", sleepTime.count());
     std::this_thread::sleep_for(sleepTime);
 
     // shut down PortAudio
     spdlog::info("terminating PortAudio...");
     Pa_Terminate();
+
+    // close the client
+    client.close();
 
     // delete player data when done
     delete playerData;
@@ -193,68 +188,34 @@ int main(int argc, char *argv[]) {
 
 }
 
-using timep = std::chrono::high_resolution_clock::time_point;
-using hrc = std::chrono::high_resolution_clock;
-
-timep last = hrc::now();
-
 int callback(const void* input, void* output, unsigned long frameCount, const PaStreamCallbackTimeInfo* paTimeInfo,
              PaStreamCallbackFlags statusFlags, void* userData) {
 
-    const timep now = hrc::now();
-    const auto diff = std::chrono::duration_cast<std::chrono::microseconds>(now - last);
+    // array of pointers to separate buffers
+    float** out = static_cast<float**>(output);
 
-    last = hrc::now();
+    // each channel
+    float* ch1 = out[0];
+    float* ch2 = out[1];
 
     // get our data structure
     auto* playerData = static_cast<player_data*>(userData);
 
-    float* out = static_cast<float*>(output);
+    route::route_client* client = playerData->client;
 
-    spdlog::debug("diff: {}, frameCount: {}, currentTime: {}, inputBufAdcTime: {}, outputBufDacTime: {}", ((double) diff.count()) / 1e6, frameCount, paTimeInfo->currentTime, paTimeInfo->inputBufferAdcTime, paTimeInfo->outputBufferDacTime);
+    route::buffer_info* buf1 = client->get_buffer(true, 0);
+    route::buffer_info* buf2 = client->get_buffer(true, 1);
 
-    // how many frames to read
-    int framesToRead = frameCount;
+    memcpy(ch1, buf1->toggle ? buf1->buffer2 : buf1->buffer1, sizeof(float) * frameCount);
+    memcpy(ch2, buf2->toggle ? buf2->buffer2 : buf2->buffer1, sizeof(float) * frameCount);
 
-    // output cursor
-    float* cursor = static_cast<float*>(output);
-
-    // amount read
-    int read = 0;
-
-    // while we have more to read
-    while (framesToRead > 0) {
-
-        // seek to the current position
-        sf_seek(playerData->sndfile, playerData->position, SEEK_SET);
-
-        // will we go past the end of the file?
-        if (framesToRead > (playerData->sfInfo->frames - playerData->position)) {
-            // only read to end of the file
-            read = playerData->sfInfo->frames - playerData->position;
-
-            // loop to beginning of file
-            playerData->position = 0;
-        } else {
-
-            // fill up the buffer
-            read = framesToRead;
-
-            // increment position
-            playerData->position += read;
-
-        }
-
-        // read into output buffer
-        sf_readf_float(playerData->sndfile, cursor, read);
-
-        // move read head
-        cursor += read;
-
-        // decrement number of samples to read
-        framesToRead -= read;
-
-    }
+//    for (int i = 0; i < 10; i++) {
+//        if (i % 2 == 0) {
+//            out[i] = 0.5;
+//        } else {
+//            out[i] = -0.5;
+//        }
+//    }
 
     return paContinue;
 }

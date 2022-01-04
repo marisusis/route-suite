@@ -19,8 +19,9 @@ namespace route {
 
     struct buffer_info {
         // allow for a double buffer
-        float buffer1[MAX_BUFFER_SIZE];
-        float buffer2[MAX_BUFFER_SIZE];
+        bool toggle = false;
+        float buffer1[MAX_BUFFER_SIZE]{};
+        float buffer2[MAX_BUFFER_SIZE]{};
     };
 
     struct channel_info {

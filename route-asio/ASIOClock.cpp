@@ -29,7 +29,7 @@ STATUS route::ASIOClock::init() {
 
     waitTime = std::chrono::duration<double>(bufferSize/sampleRate);
 
-    LOG_CTX(ASIOClock::init, "sleep time {0}s", waitTime.count());
+    LOG_CTX(ASIOClock::init, "sleep time {0}s for bufferSize={1} / sampleRate={2}", waitTime.count(), bufferSize, sampleRate);
 
     return Runnable::init();
 }
