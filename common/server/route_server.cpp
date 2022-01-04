@@ -33,7 +33,7 @@ namespace route {
 
         // default sample rate and buffer size
         info->sampleRate = 44100;
-        info->bufferSize = 256;
+        info->bufferSize = 1024;
         info->channelCount = MAX_CHANNELS;
     }
 

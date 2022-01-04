@@ -198,6 +198,8 @@ namespace route {
             memcpy(dest->buffer1, src->buffer1, server.get_server_info()->bufferSize * sizeof(float));
             memcpy(dest->buffer2, src->buffer2, server.get_server_info()->bufferSize * sizeof(float));
 
+            dest->toggle = src->toggle;
+
         }
 
         return STATUS_OK;

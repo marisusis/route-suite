@@ -83,7 +83,7 @@ namespace route {
         client_info *routeClient = &(shmClients[*ref]);
 
         // copy name
-        memcpy(routeClient->name, clientName.c_str(), sizeof(char) * 256);
+        memcpy(routeClient->name, clientName.c_str(), sizeof(char) * clientName.length());
 
         // create info
         channel_info *inInfo = new channel_info();
@@ -105,8 +105,11 @@ namespace route {
             routeClient->inputBufferMap[i] = inBuf;
             routeClient->outputBufferMap[i] = outBuf;
 
-            const std::string& inName = format_string("[REF %d] Source %d @ %d", *ref, i + 1, routeClient->inputBufferMap[i]);
-            const std::string& outName = format_string("[REF %d] Sink %d @ %d", *ref, i + 1, routeClient->outputBufferMap[i]);
+//            const std::string& inName = format_string("[REF %d] Source %d @ %d", *ref, i + 1, routeClient->inputBufferMap[i]);
+//            const std::string& outName = format_string("[REF %d] Sink %d @ %d", *ref, i + 1, routeClient->outputBufferMap[i]);
+
+            const std::string& inName = format_string("[%d] IN %d", *ref, i + 1);
+            const std::string& outName = format_string("[%d] OUT %d", *ref, i + 1);
 
             // set default values
             memcpy(inInfo->name, inName.c_str(), sizeof(char) * inName.length());

@@ -520,8 +520,10 @@ namespace route {
             // copy values over
             if (toggle) {
                 memcpy(buf->buffer2, outputBuffers[i] + blockFrames, blockFrames * sizeof(float));
+                buf->toggle = true;
             } else {
                 memcpy(buf->buffer1, outputBuffers[i], blockFrames * sizeof(float));
+                buf->toggle = false;
             }
         }
 

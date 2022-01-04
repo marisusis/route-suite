@@ -2,7 +2,7 @@
 spdlog/1.9.1
 boost/1.78.0
 libsndfile/1.0.31
-argparse/2.1
+argparse/2.2
 imgui/1.85
 
 [generators]
